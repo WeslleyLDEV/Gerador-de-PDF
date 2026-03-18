@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Declaração ASHPS - IR 2026</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
+    <style>
+         :root {
+            --primary: #6a1b9a;
+            --primary-dark: #4a148c;
+            --secondary: #f3e5f5;
+            --accent: #ce93d8;
+            --text: #333;
+            --bg: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            padding: 40px;
+            max-width: 950px;
+            margin: auto;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        h2 {
+            color: var(--primary);
+            border-bottom: 3px solid var(--secondary);
+            padding-bottom: 10px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h3 {
+            color: var(--primary);
+            margin-top: 30px;
+            font-size: 1.1em;
+            border-left: 5px solid var(--primary);
+            padding: 8px 15px;
+            background: var(--secondary);
+            border-radius: 0 8px 8px 0;
+        }
+        
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: 600;
+            font-size: 0.85em;
+            color: #666;
+            text-transform: uppercase;
+        }
+        
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 15px;
+        }
+        
+        input:focus,
+        select:focus {
+            border-color: var(--accent);
+            outline: none;
+        }
+        /* Campo editável mas em destaque */
+        
+        .input-destaque {
+            background: #e3f2fd;
+            color: #1565c0;
+            font-weight: bold;
+            border-color: #90caf9;
+        }
+        
+        .input-destaque:focus {
+            border-color: #1976d2;
+            box-shadow: 0 0 5px rgba(25, 118, 210, 0.3);
+        }
+        
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .grid-4 {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .btn-main {
+            width: 100%;
+            padding: 18px;
+            margin-top: 30px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 18px;
+            transition: 0.3s;
+        }
+        
+        .btn-main:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .btn-add {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-weight: 600;
+        }
+        
+        .item-box {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-top: 15px;
+            border-radius: 12px;
+            position: relative;
+            background: #fafafa;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1.5fr 1.5fr;
+            gap: 15px;
+            align-items: end;
+        }
+        
+        .remove-btn {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            background: #ff5252;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .status-bar {
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 5px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+        
+        .ok {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .warn {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        
+        .total-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .card-total {
+            background: #fff;
+            border: 2px solid #eee;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .card-total span {
+            display: block;
+            font-size: 0.85em;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .card-total input {
+            text-align: center;
+            font-size: 1.5em;
+            border: none;
+            padding: 0;
+            margin: 0;
+            background: transparent !important;
+            color: var(--primary-dark);
+        }
+        
+        .card-desc {
+            border-color: #ffcdd2;
+            background: #ffebee;
+        }
+        
+        .card-desc input {
+            color: #d32f2f;
+        }
+        
+        .card-liq {
+            border-color: var(--primary);
+            background: var(--secondary);
+        }
+        
+        .card-liq input {
+            color: var(--primary);
+            font-weight: 800;
+            font-size: 1.8em;
+        }
+        
+        hr {
+            border: 0;
+            border-top: 2px solid #f0f0f0;
+            margin: 40px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>Gerador de Declaração ASHPS - IR 2026</h2>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                <label>1. Importar Planilha</label>
+                <input type="file" accept=".xlsx,.xls" onchange="processarPlanilha(event)">
+                <div id="statusMsg" class="status-bar warn">Aguardando arquivo...</div>
+            </div>
+            <div>
+                <label>2. Localizar Pessoa</label>
+                <input list="listaBusca" id="inputBusca" oninput="selecionarAssociado()" placeholder="Digite o nome para buscar...">
+                <datalist id="listaBusca"></datalist>
+            </div>
+        </div>
+
+        <hr>
+
+        <h3>Dados do Beneficiário Titular</h3>
+        <div class="grid-3">
+            <div><label>Nome Completo</label><input id="nomeTitular"></div>
+            <div><label>CPF</label><input id="cpfTitular" placeholder="000.000.000-00" oninput="mascaraCPF(this)"></div>
+            <div><label>Matrícula</label><input id="matTitular"></div>
+        </div>
+
+        <div class="grid-4">
+            <div>
+                <label>Data de Nascimento</label>
+                <input type="date" id="nascTitular" onchange="atualizarValores()">
+            </div>
+            <div>
+                <label>Plano de Saúde (Taxa Adm)</label>
+                <select id="selConvenio" onchange="atualizarValores()">
+                <option value="UNIMAX">UNIMAX (8%)</option>
+                <option value="UNIFACIL">UNIFÁCIL (8%)</option>
+                <option value="UNIPART">UNIPART (8%)</option>
+                <option value="VERTE">VERTE SAÚDE (10%)</option>
+                <option value="CCG TOP LIFE">CCG TOP LIFE (20%)</option>
+                <option value="CCG MULTI">CCG MULTI (11,11%)</option>
+                <option value="UNIODONTO">UNIODONTO (31%)</option>
+                <option value="ODONTO EMPRESAS">ODONTO EMPRESAS (64%)</option>
+                <option value="ODONTOPREV">ODONTOPREV (5%)</option>
+                <option value="ODONTO UNIFACIL">ODONTO UNIFÁCIL (0%)</option>
+            </select>
+            </div>
+            <div>
+                <label>Valor Pago Bruto (R$)</label>
+                <input type="number" id="titBruto" step="0.01" value="0.00" oninput="calcularLiquido(this, 'titLiquido')">
+            </div>
+            <div>
+                <label>Líquido p/ IR (Editável)</label>
+                <input type="number" id="titLiquido" class="input-destaque" step="0.01" value="0.00" oninput="somarTudo()">
+            </div>
+        </div>
+
+        <h3>Dependentes Vinculados</h3>
+        <div id="areaDeps"></div>
+        <button class="btn-add" onclick="novoDependente()">+ Adicionar Dependente</button>
+
+        <h3>Coparticipações / Exames</h3>
+        <div id="areaExames"></div>
+        <button class="btn-add" style="border-color: #2e7d32; color: #2e7d32;" onclick="novoExame()">+ Adicionar Exame</button>
+
+        <h3>Taxas Diversas</h3>
+        <div id="areaTaxas"></div>
+        <button class="btn-add" style="border-color: #f57c00; color: #f57c00;" onclick="novaTaxa()">+ Adicionar Taxa</button>
+
+        <hr>
+
+        <h3 style="text-align: center; border: none; background: none; padding: 0;">Painel de Controle (Não sai no PDF)</h3>
+        <div class="total-box">
+            <div class="card-total">
+                <span>(+) Total Pago à ASHPS</span>
+                <input type="text" id="displayTotalBruto" readonly value="0,00">
+            </div>
+            <div class="card-total card-desc">
+                <span>(-) Taxa Administrativa</span>
+                <input type="text" id="displayTotalDesconto" readonly value="0,00">
+            </div>
+            <div class="card-total card-liq">
+                <span>(=) TOTAL A DECLARAR</span>
+                <input type="text" id="displayTotalLiquido" readonly value="0,00">
+            </div>
+        </div>
+
+        <button class="btn-main" onclick="gerarPDF()">BAIXAR DECLARAÇÃO EM PDF</button>
+    </div>
+
+    <script>
+        // =========================================================================
+        // COLE ABAIXO O CÓDIGO BASE64 DA LOGO.PNG CASO O NAVEGADOR BLOQUEIE A LEITURA LOCAL
+        // =========================================================================
+        const logoBase64 = "";
+
+        const bancoLocal = new Map();
+
+        // Tabela oficial de preços mensais dos planos
+        const precos = {
+            UNIMAX: [456.13, 524.51, 602.98, 693.70, 797.73, 925.45, 1119.73, 1455.85, 1965.32, 2733.37],
+            UNIFACIL: [114.82, 156.44, 187.25, 213.74, 222.34, 226.46, 281.35, 323.46, 445.19, 688.93],
+            UNIPART: [293.05, 351.37, 411.73, 472.39, 501.11, 577.89, 717.96, 909.91, 1199.45, 1757.99],
+            VERTE: [99.99, 114.96, 132.22, 152.03, 174.86, 200.61, 245.33, 318.91, 430.54, 599.78],
+            "CCG TOP LIFE": [267.34, 310.92, 349.74, 392.00, 435.16, 476.31, 614.57, 685.34, 882.50, 1294.58],
+            "CCG MULTI": [238.97, 300.93, 326.73, 354.21, 369.33, 417.13, 589.71, 711.15, 1106.15, 1256.49],
+            UNIODONTO: Array(10).fill(38.88),
+            "ODONTO EMPRESAS": Array(10).fill(27.49),
+            ODONTOPREV: Array(10).fill(36.38),
+            "ODONTO UNIFACIL": Array(10).fill(19.55)
+        };
+
+        const taxas = {
+            UNIMAX: 0.08,
+            UNIFACIL: 0.08,
+            UNIPART: 0.08,
+            VERTE: 0.10,
+            "CCG TOP LIFE": 0.20,
+            "CCG MULTI": 0.1111,
+            UNIODONTO: 0.31,
+            "ODONTO EMPRESAS": 0.64,
+            ODONTOPREV: 0.05,
+            "ODONTO UNIFACIL": 0
+        };
+
+        const cnpjs = {
+            UNIMAX: {
+                nome: "UNIMED PORTO ALEGRE",
+                cnpj: "87.096.616/0001-96"
+            },
+            UNIFACIL: {
+                nome: "UNIMED PORTO ALEGRE",
+                cnpj: "87.096.616/0001-96"
+            },
+            UNIPART: {
+                nome: "UNIMED PORTO ALEGRE",
+                cnpj: "87.096.616/0001-96"
+            },
+            VERTE: {
+                nome: "VERTE SAÚDE",
+                cnpj: "92.741.016/0001-73"
+            },
+            "CCG TOP LIFE": {
+                nome: "CLINIPAM",
+                cnpj: "76.882.612/0001-17"
+            },
+            "CCG MULTI": {
+                nome: "CLINIPAM",
+                cnpj: "76.882.612/0001-17"
+            },
+            UNIODONTO: {
+                nome: "UNIODONTO",
+                cnpj: "88.938.089/0001-82"
+            },
+            "ODONTO EMPRESAS": {
+                nome: "ODONTO EMPRESAS",
+                cnpj: "40.223.893/0001-59"
+            },
+            ODONTOPREV: {
+                nome: "ODONTOPREV",
+                cnpj: "58.119.199/0001-51"
+            },
+            "ODONTO UNIFACIL": {
+                nome: "ODONTO UNIFÁCIL",
+                cnpj: "87.096.616/0001-96"
+            }
+        };
+
+        function processarPlanilha(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                const wb = XLSX.read(evt.target.result, {
+                    type: 'binary'
+                });
+                const dados = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+                const datalist = document.getElementById('listaBusca');
+
+                bancoLocal.clear();
+                datalist.innerHTML = "";
+
+                dados.forEach(p => {
+                    const nome = String(p.NOME || p.Nome || "").toUpperCase().trim();
+                    if (nome) {
+                        bancoLocal.set(nome, p);
+                        const opt = document.createElement('option');
+                        opt.value = nome;
+                        datalist.appendChild(opt);
+                    }
+                });
+                const msg = document.getElementById('statusMsg');
+                msg.textContent = `✓ ${bancoLocal.size} cadastros carregados!`;
+                msg.className = "status-bar ok";
+            };
+            reader.readAsBinaryString(file);
+        }
+
+        function mascaraCPF(i) {
+            let v = String(i.value).replace(/\D/g, "");
+            if (v.length > 11) v = v.slice(0, 11);
+            v = v.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+            i.value = v;
+        }
+
+        function selecionarAssociado() {
+            const busca = document.getElementById('inputBusca').value.toUpperCase();
+            const p = bancoLocal.get(busca);
+            if (!p) return;
+
+            document.getElementById('nomeTitular').value = busca;
+            document.getElementById('matTitular').value = p.MATRICULA || p.Matricula || "";
+
+            const cpfCampo = document.getElementById('cpfTitular');
+            cpfCampo.value = p.CPF || p.Cpf || "";
+            mascaraCPF(cpfCampo);
+
+            let d = p.NASCIMENTO || p.Nascimento;
+            if (d) {
+                if (typeof d === 'number') {
+                    const dateObj = XLSX.SSF.parse_date_code(d);
+                    document.getElementById('nascTitular').value = `${dateObj.y}-${String(dateObj.m).padStart(2,'0')}-${String(dateObj.d).padStart(2,'0')}`;
+                } else {
+                    document.getElementById('nascTitular').value = d;
+                }
+            }
+            atualizarValores();
+        }
+
+        function atualizarValores() {
+            const nasc = document.getElementById('nascTitular').value;
+            const conv = document.getElementById('selConvenio').value;
+            const taxa = taxas[conv] || 0;
+
+            // Auto Cálculo do Titular pela Idade
+            if (nasc) {
+                const idade = new Date().getFullYear() - new Date(nasc).getFullYear();
+                let idx = 0;
+                if (idade <= 18) idx = 0;
+                else if (idade <= 23) idx = 1;
+                else if (idade <= 28) idx = 2;
+                else if (idade <= 33) idx = 3;
+                else if (idade <= 38) idx = 4;
+                else if (idade <= 43) idx = 5;
+                else if (idade <= 48) idx = 6;
+                else if (idade <= 53) idx = 7;
+                else if (idade <= 58) idx = 8;
+                else idx = 9;
+
+                const baseMensal = precos[conv][idx];
+                // O valor Bruto cobrado do associado pela ASHPS
+                const valorBrutoAnual = (baseMensal * 12) / (1 - taxa);
+                document.getElementById('titBruto').value = valorBrutoAnual.toFixed(2);
+            }
+
+            calcularLiquido(document.getElementById('titBruto'), 'titLiquido');
+
+            // Recalcula o líquido de todos os dependentes e exames se o plano for trocado
+            document.querySelectorAll('.item-box').forEach(box => {
+                const brutoInput = box.querySelector('.txt-bruto');
+                const liqInput = box.querySelector('.txt-liq');
+                if (brutoInput && liqInput) {
+                    const bruto = parseFloat(brutoInput.value) || 0;
+                    liqInput.value = (bruto * (1 - taxa)).toFixed(2);
+                }
+            });
+
+            somarTudo();
+        }
+
+        function calcularLiquido(inputBruto, idLiquidoDestino = null) {
+            const conv = document.getElementById('selConvenio').value;
+            const taxa = taxas[conv] || 0;
+            const bruto = parseFloat(inputBruto.value) || 0;
+            const liq = bruto * (1 - taxa);
+
+            if (idLiquidoDestino) {
+                document.getElementById(idLiquidoDestino).value = liq.toFixed(2);
+            } else {
+                const box = inputBruto.closest('.item-box');
+                if (box) box.querySelector('.txt-liq').value = liq.toFixed(2);
+            }
+
+            somarTudo();
+        }
+
+        function somarTudo() {
+            let totalBruto = parseFloat(document.getElementById('titBruto').value) || 0;
+            let totalLiquido = parseFloat(document.getElementById('titLiquido').value) || 0;
+
+            document.querySelectorAll('.item-box').forEach(box => {
+                totalBruto += parseFloat(box.querySelector('.txt-bruto').value) || 0;
+                totalLiquido += parseFloat(box.querySelector('.txt-liq').value) || 0;
+            });
+
+            let totalDesconto = totalBruto - totalLiquido;
+
+            document.getElementById('displayTotalBruto').value = totalBruto.toLocaleString('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            document.getElementById('displayTotalDesconto').value = totalDesconto.toLocaleString('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            document.getElementById('displayTotalLiquido').value = totalLiquido.toLocaleString('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        function novoDependente() {
+            const div = document.createElement('div');
+            div.className = 'item-box dep-box';
+            div.innerHTML = `
+            <button class="remove-btn" onclick="this.parentElement.remove(); somarTudo();">×</button>
+            <div>
+                <label>Nome do Dependente</label>
+                <input class="txt-nome" placeholder="Ex: Rosa Maria">
+            </div>
+            <div>
+                <label>CPF (Opcional)</label>
+                <input class="txt-cpf" placeholder="000.000.000-00" oninput="mascaraCPF(this)">
+            </div>
+            <div>
+                <label>Pago Bruto (R$)</label>
+                <input type="number" step="0.01" class="txt-bruto" value="0.00" oninput="calcularLiquido(this)">
+            </div>
+            <div>
+                <label>Líquido p/ IR (Editável)</label>
+                <input type="number" step="0.01" class="txt-liq input-destaque" value="0.00" oninput="somarTudo()">
+            </div>
+        `;
+            document.getElementById("areaDeps").appendChild(div);
+            somarTudo();
+        }
+
+        function novoExame() {
+            const div = document.createElement('div');
+            div.className = 'item-box exa-box';
+            div.innerHTML = `
+            <button class="remove-btn" onclick="this.parentElement.remove(); somarTudo();">×</button>
+            <div style="grid-column: span 2;">
+                <label>Descrição do Exame / Coparticipação</label>
+                <input class="txt-nome" placeholder="Ex: Exames Laboratoriais">
+            </div>
+            <div>
+                <label>Pago Bruto (R$)</label>
+                <input type="number" step="0.01" class="txt-bruto" value="0.00" oninput="calcularLiquido(this)">
+            </div>
+            <div>
+                <label>Líquido p/ IR (Editável)</label>
+                <input type="number" step="0.01" class="txt-liq input-destaque" value="0.00" oninput="somarTudo()">
+            </div>
+        `;
+            document.getElementById("areaExames").appendChild(div);
+            somarTudo();
+        }
+
+        function novaTaxa() {
+            const div = document.createElement('div');
+            div.className = 'item-box taxa-box';
+            div.innerHTML = `
+            <button class="remove-btn" onclick="this.parentElement.remove(); somarTudo();">×</button>
+            <div style="grid-column: span 2;">
+                <label>Descrição da Taxa</label>
+                <input class="txt-nome" placeholder="Ex: Taxa de Inscrição">
+            </div>
+            <div>
+                <label>Pago Bruto (R$)</label>
+                <input type="number" step="0.01" class="txt-bruto" value="0.00" oninput="calcularLiquido(this)">
+            </div>
+            <div>
+                <label>Líquido p/ IR (Editável)</label>
+                <input type="number" step="0.01" class="txt-liq input-destaque" value="0.00" oninput="somarTudo()">
+            </div>
+        `;
+            document.getElementById("areaTaxas").appendChild(div);
+            somarTudo();
+        }
+
+        function formataMoeda(valor) {
+            return valor.toLocaleString('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        async function gerarPDF() {
+            const {
+                jsPDF
+            } = window.jspdf;
+            const doc = new jsPDF();
+
+            try {
+                const img = new Image();
+                img.src = 'logo.png';
+                await new Promise((resolve, reject) => {
+                    img.onload = resolve;
+                    img.onerror = reject;
+                });
+                doc.addImage(img, 'PNG', 85, 10, 40, 20);
+            } catch (e) {
+                if (logoBase64 && logoBase64.trim() !== "") {
+                    doc.addImage(logoBase64, 'PNG', 85, 10, 40, 20);
+                }
+            }
+
+            let y = 45;
+
+            const nome = document.getElementById('nomeTitular').value.toUpperCase() || "NÃO INFORMADO";
+            const cpfTitular = document.getElementById('cpfTitular').value || "NÃO INFORMADO";
+            const conv = document.getElementById('selConvenio').value;
+
+            doc.setFont("helvetica", "bold").setFontSize(16);
+            doc.text("DECLARAÇÃO", 105, y, {
+                align: "center"
+            });
+            y += 8;
+            doc.setFontSize(12).setFont("helvetica", "normal");
+            doc.text("Para fins de Imposto de Renda", 105, y, {
+                align: "center"
+            });
+
+            y += 25;
+            doc.setFontSize(11);
+
+            const titLiq = parseFloat(document.getElementById('titLiquido').value) || 0;
+            let totalLiqGeral = titLiq;
+
+            const textoPrincipal = `Declaramos para os devidos fins de direito que o beneficiário titular, ${nome}, inscrito(a) sob o CPF nº ${cpfTitular}, pagou o valor de R$ ${formataMoeda(titLiq)} referente a mensalidades do Plano de Saúde ${cnpjs[conv].nome} (CNPJ ${cnpjs[conv].cnpj}), no período de 01/01/2025 a 31/12/2025, conforme detalhamento abaixo:`;
+
+            const splitText = doc.splitTextToSize(textoPrincipal, 170);
+            doc.text(splitText, 20, y);
+            y += (splitText.length * 6) + 10;
+
+            // ================= DEPENDENTES =================
+            const deps = document.querySelectorAll('.dep-box');
+            if (deps.length > 0) {
+                doc.setFont("helvetica", "bold");
+                doc.text("DEPENDENTES", 20, y);
+                y += 8;
+                doc.setFont("helvetica", "normal");
+
+                deps.forEach(d => {
+                    const n = d.querySelector('.txt-nome').value.toUpperCase();
+                    const cpfDep = d.querySelector('.txt-cpf').value || "";
+                    const vL = parseFloat(d.querySelector('.txt-liq').value) || 0;
+
+                    totalLiqGeral += vL;
+
+                    let textoEsq = cpfDep ? `${n} (Cpf: ${cpfDep})` : n;
+                    let textoDir = `R$ ${formataMoeda(vL)}`;
+
+                    doc.text(textoEsq, 20, y);
+                    doc.text(textoDir, 160, y);
+                    doc.text(".".repeat(50), 95, y);
+
+                    y += 8;
+                });
+                y += 5;
+            }
+
+            // ================= EXAMES =================
+            const exs = document.querySelectorAll('.exa-box');
+            if (exs.length > 0) {
+                doc.setFont("helvetica", "bold");
+                doc.text("COPARTICIPAÇÕES / EXAMES", 20, y);
+                y += 8;
+                doc.setFont("helvetica", "normal");
+
+                exs.forEach(e => {
+                    const n = e.querySelector('.txt-nome').value.toUpperCase();
+                    const vL = parseFloat(e.querySelector('.txt-liq').value) || 0;
+
+                    totalLiqGeral += vL;
+
+                    let textoDir = `R$ ${formataMoeda(vL)}`;
+
+                    doc.text(n, 20, y);
+                    doc.text(textoDir, 160, y);
+                    doc.text(".".repeat(50), 95, y);
+
+                    y += 8;
+                });
+                y += 5;
+            }
+
+            // ================= TAXAS =================
+            const taxasBoxes = document.querySelectorAll('.taxa-box');
+            if (taxasBoxes.length > 0) {
+                doc.setFont("helvetica", "bold");
+                doc.text("TAXAS / OUTROS", 20, y);
+                y += 8;
+                doc.setFont("helvetica", "normal");
+
+                taxasBoxes.forEach(t => {
+                    const n = t.querySelector('.txt-nome').value.toUpperCase();
+                    const vL = parseFloat(t.querySelector('.txt-liq').value) || 0;
+
+                    totalLiqGeral += vL;
+
+                    let textoDir = `R$ ${formataMoeda(vL)}`;
+
+                    doc.text(n, 20, y);
+                    doc.text(textoDir, 160, y);
+                    doc.text(".".repeat(50), 95, y);
+
+                    y += 8;
+                });
+                y += 5;
+            }
+
+            // ================= TOTAL FINAL =================
+            y += 5;
+            doc.setFont("helvetica", "bold");
+            doc.text(`Valor Total: R$ ${formataMoeda(totalLiqGeral)}`, 20, y);
+
+            // ================= DATA E ASSINATURA REMOVIDA =================
+            y += 30;
+            const meses = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+            const dataHoje = new Date();
+            const dataFormatada = `Porto Alegre, ${dataHoje.getDate()} de ${meses[dataHoje.getMonth()]} de ${dataHoje.getFullYear()}`;
+
+            doc.setFont("helvetica", "normal");
+            doc.text(dataFormatada, 105, y, {
+                align: "center"
+            });
+
+            doc.save(`Declaracao_IR_${nome.split(' ')[0]}_ASHPS.pdf`);
+        }
+    </script>
+
+</body>
+
+</html>
