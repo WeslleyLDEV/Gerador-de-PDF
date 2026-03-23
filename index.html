@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,7 +19,7 @@
         }
 
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
-        .container { background: white; padding: 40px; max-width: 1000px; margin: auto; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        .container { background: white; padding: 40px; max-width: 1050px; margin: auto; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
         
         h2 { color: var(--primary); border-bottom: 3px solid var(--secondary); padding-bottom: 10px; text-align: center; margin-bottom: 30px; }
         h3 { color: var(--primary); margin-top: 30px; font-size: 1.1em; border-left: 5px solid var(--primary); padding: 8px 15px; background: var(--secondary); border-radius: 0 8px 8px 0; }
@@ -33,14 +33,14 @@
 
         .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; }
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
-        .grid-6 { display: grid; grid-template-columns: 1fr 1.2fr 1fr 0.8fr 1fr 1fr; gap: 15px; }
+        .grid-7 { display: grid; grid-template-columns: 1fr 1.2fr 1fr 0.8fr 0.7fr 1fr 1fr; gap: 15px; }
 
         .btn-main { width: 100%; padding: 18px; margin-top: 30px; background: var(--primary); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 18px; transition: 0.3s; }
         .btn-main:hover { background: var(--primary-dark); transform: translateY(-2px); }
         
         .btn-add { background: white; color: var(--primary); border: 2px solid var(--primary); padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 15px; font-weight: 600; }
 
-        .item-box { border: 1px solid #ddd; padding: 20px; margin-top: 15px; border-radius: 12px; position: relative; background: #fafafa; display: grid; grid-template-columns: 2fr 1fr 1.5fr 1.5fr; gap: 15px; align-items: end; }
+        .item-box { border: 1px solid #ddd; padding: 20px; margin-top: 15px; border-radius: 12px; position: relative; background: #fafafa; display: grid; gap: 15px; align-items: end; }
         .remove-btn { position: absolute; right: 10px; top: 10px; background: #ff5252; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-weight: bold;}
         
         .status-bar { padding: 10px; border-radius: 8px; margin-top: 5px; font-size: 0.85em; font-weight: 500; }
@@ -98,7 +98,7 @@
         <div><label>Matrícula</label><input id="matTitular"></div>
     </div>
 
-    <div class="grid-6" style="margin-top: 20px;">
+    <div class="grid-7" style="margin-top: 20px;">
         <div>
             <label>Nascimento</label>
             <input type="date" id="nascTitular" onchange="atualizarValores()">
@@ -141,7 +141,11 @@
             <input type="number" id="inputPercReajuste" step="0.01" value="5.00" onchange="atualizarValores()">
         </div>
         <div>
-            <label>Valor Bruto (R$)</label>
+            <label>Qtd Meses</label>
+            <input type="number" id="qtdMesesTitular" value="12" min="1" max="12" onchange="atualizarValores()">
+        </div>
+        <div>
+            <label>Bruto Total</label>
             <input type="number" id="titBruto" step="0.01" value="0.00" oninput="calcularLiquido(this, 'titLiquido')">
         </div>
         <div>
@@ -243,8 +247,6 @@
         const reader = new FileReader();
         reader.onload = (evt) => {
             const wb = XLSX.read(evt.target.result, { type: 'binary' });
-            
-            // LER FORÇANDO O MAPEAMENTO PELAS COLUNAS A, B, C e D
             const dados = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: "A", defval: "" });
             const datalist = document.getElementById('listaBusca');
             
@@ -260,12 +262,7 @@
                 const nascimento = linha.D;
 
                 if(nome && nome !== "UNDEFINED" && nome !== "") {
-                    bancoLocal.set(nome, { 
-                        Matricula: matricula, 
-                        Cpf: cpf, 
-                        Nascimento: nascimento 
-                    });
-                    
+                    bancoLocal.set(nome, { Matricula: matricula, Cpf: cpf, Nascimento: nascimento });
                     const opt = document.createElement('option');
                     opt.value = nome;
                     datalist.appendChild(opt);
@@ -289,8 +286,7 @@
             const cpf = match[1];
             const valorMensalStr = match[2].replace(/\./g, '').replace(',', '.');
             const valorMensal = parseFloat(valorMensalStr);
-            
-            excecoesVerte[cpf] = valorMensal * 12;
+            excecoesVerte[cpf] = valorMensal * 12; // Base anual no PDF original
             count++;
         }
         
@@ -355,12 +351,14 @@
         
         const mesReajuste = parseInt(document.getElementById('selMesReajuste').value);
         const percReajuste = parseFloat(document.getElementById('inputPercReajuste').value) / 100;
+        const qtdMesesTitular = parseInt(document.getElementById('qtdMesesTitular').value) || 12;
 
         let valorBrutoTotal = 0;
         let valorLiquidoTotal = 0;
 
         memoriaCalculoTitular = "=== CÁLCULO DO TITULAR ===\n";
         memoriaCalculoTitular += `Plano Selecionado: ${conv} | Taxa Administrativa: ${taxa * 100}%\n`;
+        memoriaCalculoTitular += `Meses Pagos no Ano: ${qtdMesesTitular}\n`;
 
         if(nasc) {
             const [anoNasc, mesNasc] = nasc.split('-').map(Number);
@@ -369,23 +367,24 @@
             const cpfLimp = document.getElementById('cpfTitular').value.replace(/\D/g, "");
             
             if (conv === "VERTE" && excecoesVerte[cpfLimp]) {
-                valorBrutoTotal = excecoesVerte[cpfLimp];
+                const valorMensalVerte = excecoesVerte[cpfLimp] / 12; // Valor unitário por mês
+                valorBrutoTotal = valorMensalVerte * qtdMesesTitular;
                 valorLiquidoTotal = valorBrutoTotal / (1 + taxa);
                 
                 memoriaCalculoTitular += `\n>> EXCEÇÃO APLICADA VERTE: CPF ${cpfLimp} importado do PDF.\n`;
-                memoriaCalculoTitular += `>> Valor do boleto anual BRUTO fixado: R$ ${valorBrutoTotal.toFixed(2)}\n`;
+                memoriaCalculoTitular += `>> Valor do boleto (R$ ${valorMensalVerte.toFixed(2)} x ${qtdMesesTitular} meses) BRUTO fixado: R$ ${valorBrutoTotal.toFixed(2)}\n`;
             } else {
                 memoriaCalculoTitular += `Data de Nascimento: ${nasc} | Mês de Aniversário: ${mesNasc}\n`;
                 
                 if (mesReajuste === 0) {
-                    memoriaCalculoTitular += `Mês do Reajuste: Sem Reajuste (Valor fixo o ano todo)\n\n`;
+                    memoriaCalculoTitular += `Mês do Reajuste: Sem Reajuste (Valor fixo)\n\n`;
                 } else {
                     memoriaCalculoTitular += `Mês do Reajuste do Plano: Mês ${mesReajuste} | % do Reajuste: ${percReajuste * 100}%\n\n`;
                 }
 
                 memoriaCalculoTitular += `Detalhamento das Mensalidades (Ano Base 2025):\n`;
                 
-                for(let mes = 1; mes <= 12; mes++) {
+                for(let mes = 1; mes <= qtdMesesTitular; mes++) {
                     let idadeNoMes = anoDeclaracao - anoNasc;
                     if (mes < mesNasc) {
                         idadeNoMes--; 
@@ -398,7 +397,6 @@
 
                     let brutoMes = precos[conv][idx];
 
-                    // Se não for "Sem Reajuste" (mesReajuste > 0) e for antes do mês do reajuste, aplica a dedução
                     if (mesReajuste > 0 && mes < mesReajuste) {
                         brutoMes = brutoMes / (1 + percReajuste);
                     }
@@ -410,7 +408,7 @@
                     
                     memoriaCalculoTitular += `- Mês ${String(mes).padStart(2, '0')}: Idade ${idadeNoMes} (Faixa ${idx+1}) | Bruto: R$ ${brutoMes.toFixed(2)} | Líquido: R$ ${liqMes.toFixed(2)}\n`;
                 }
-                memoriaCalculoTitular += `\nSoma das 12 mensalidades (BRUTO): R$ ${valorBrutoTotal.toFixed(2)}\n`;
+                memoriaCalculoTitular += `\nSoma das ${qtdMesesTitular} mensalidades (BRUTO): R$ ${valorBrutoTotal.toFixed(2)}\n`;
             }
             
             document.getElementById('titBruto').value = valorBrutoTotal.toFixed(2);
@@ -419,7 +417,8 @@
             memoriaCalculoTitular += "Aguardando preenchimento da data de nascimento do titular...\n";
         }
 
-        document.querySelectorAll('.item-box').forEach(box => {
+        // Atualiza as caixas extra (Exames/Taxas) que dependem apenas de recalcular o líquido
+        document.querySelectorAll('.exa-box, .taxa-box').forEach(box => {
             const brutoInput = box.querySelector('.txt-bruto');
             const liqInput = box.querySelector('.txt-liq');
             if(brutoInput && liqInput) {
@@ -429,6 +428,17 @@
         });
 
         somarTudo();
+    }
+
+    // Função que calcula o Valor Mensal X Qtd Meses para a linha dos Dependentes
+    function calcLinha(el) {
+        const box = el.closest('.item-box');
+        const mensal = parseFloat(box.querySelector('.txt-mensal').value) || 0;
+        const meses = parseInt(box.querySelector('.txt-meses').value) || 12;
+        const brutoTotal = mensal * meses;
+        
+        box.querySelector('.txt-bruto').value = brutoTotal.toFixed(2);
+        calcularLiquido(box.querySelector('.txt-bruto'));
     }
 
     function calcularLiquido(inputBruto, idLiquidoDestino = null) {
@@ -486,14 +496,15 @@
 
         document.getElementById('boxMemoria').textContent = logFinal;
 
-        document.getElementById('displayTotalBruto').value = totalBruto.toLocaleString('pt-PT', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-        document.getElementById('displayTotalDesconto').value = totalDesconto.toLocaleString('pt-PT', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-        document.getElementById('displayTotalLiquido').value = totalLiquido.toLocaleString('pt-PT', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('displayTotalBruto').value = totalBruto.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('displayTotalDesconto').value = totalDesconto.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('displayTotalLiquido').value = totalLiquido.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
     }
 
     function novoDependente() {
         const div = document.createElement('div');
         div.className = 'item-box dep-box';
+        div.style.gridTemplateColumns = '1.5fr 1fr 1fr 0.8fr 1fr 1fr';
         div.innerHTML = `
             <button class="remove-btn" onclick="this.parentElement.remove(); somarTudo();">×</button>
             <div>
@@ -501,15 +512,23 @@
                 <input class="txt-nome" placeholder="Ex: Rosa Maria" oninput="somarTudo()">
             </div>
             <div>
-                <label>CPF (Opcional)</label>
+                <label>CPF</label>
                 <input class="txt-cpf" placeholder="000.000.000-00" oninput="mascaraCPF(this)">
             </div>
             <div>
-                <label>Pago Bruto (R$)</label>
+                <label>Valor Mensal (R$)</label>
+                <input type="number" step="0.01" class="txt-mensal" value="0.00" oninput="calcLinha(this)">
+            </div>
+            <div>
+                <label>Meses</label>
+                <input type="number" class="txt-meses" value="12" min="1" max="12" oninput="calcLinha(this)">
+            </div>
+            <div>
+                <label>Total Bruto</label>
                 <input type="number" step="0.01" class="txt-bruto" value="0.00" oninput="calcularLiquido(this)">
             </div>
             <div>
-                <label>Líquido p/ IR (Editável)</label>
+                <label>Líquido p/ IR</label>
                 <input type="number" step="0.01" class="txt-liq input-destaque" value="0.00" oninput="somarTudo()">
             </div>
         `;
@@ -520,9 +539,10 @@
     function novoExame() {
         const div = document.createElement('div');
         div.className = 'item-box exa-box';
+        div.style.gridTemplateColumns = '2fr 1fr 1.5fr';
         div.innerHTML = `
             <button class="remove-btn" onclick="this.parentElement.remove(); somarTudo();">×</button>
-            <div style="grid-column: span 2;">
+            <div>
                 <label>Descrição do Exame / Coparticipação</label>
                 <input class="txt-nome" placeholder="Ex: Exames Laboratoriais" oninput="somarTudo()">
             </div>
@@ -542,9 +562,10 @@
     function novaTaxa() {
         const div = document.createElement('div');
         div.className = 'item-box taxa-box';
+        div.style.gridTemplateColumns = '2fr 1fr 1.5fr';
         div.innerHTML = `
             <button class="remove-btn" onclick="this.parentElement.remove(); somarTudo();">×</button>
-            <div style="grid-column: span 2;">
+            <div>
                 <label>Descrição da Taxa</label>
                 <input class="txt-nome" placeholder="Ex: Taxa de Inscrição" oninput="somarTudo()">
             </div>
@@ -562,7 +583,7 @@
     }
 
     function formataMoeda(valor) {
-        return valor.toLocaleString('pt-PT', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        return valor.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
     }
 
     async function gerarPDF() {
