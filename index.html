@@ -616,18 +616,18 @@
         y += 25;
         doc.setFontSize(11);
         
-        const titLiq = parseFloat(document.getElementById('titLiquido').value) || 0;
-        let totalLiqGeral = titLiq;
+        const titBruto = parseFloat(document.getElementById('titBruto').value) || 0;
+        let totalBrutoGeral = titBruto;
 
         const deps = document.querySelectorAll('.dep-box');
         const exs = document.querySelectorAll('.exa-box');
         const taxasBoxes = document.querySelectorAll('.taxa-box');
 
-        deps.forEach(d => totalLiqGeral += (parseFloat(d.querySelector('.txt-liq').value) || 0));
-        exs.forEach(e => totalLiqGeral += (parseFloat(e.querySelector('.txt-liq').value) || 0));
-        taxasBoxes.forEach(t => totalLiqGeral += (parseFloat(t.querySelector('.txt-liq').value) || 0));
+        deps.forEach(d => totalBrutoGeral += (parseFloat(d.querySelector('.txt-bruto').value) || 0));
+        exs.forEach(e => totalBrutoGeral += (parseFloat(e.querySelector('.txt-bruto').value) || 0));
+        taxasBoxes.forEach(t => totalBrutoGeral += (parseFloat(t.querySelector('.txt-bruto').value) || 0));
 
-        const textoPrincipal = `Declaramos para os devidos fins de direito que o beneficiário titular, ${nome}, inscrito(a) sob o CPF nº ${cpfTitular}, pagou o valor total de R$ ${formataMoeda(totalLiqGeral)} referente a mensalidades do Plano de Saúde ${cnpjs[conv].nome} (CNPJ ${cnpjs[conv].cnpj}), no período de 01/01/2025 a 31/12/2025, conforme detalhamento abaixo:`;
+        const textoPrincipal = `Declaramos para os devidos fins de direito que o beneficiário titular, ${nome}, inscrito(a) sob o CPF nº ${cpfTitular}, pagou o valor total de R$ ${formataMoeda(totalBrutoGeral)} referente a mensalidades do Plano de Saúde ${cnpjs[conv].nome} (CNPJ ${cnpjs[conv].cnpj}), no período de 01/01/2025 a 31/12/2025, conforme detalhamento abaixo:`;
         
         const splitText = doc.splitTextToSize(textoPrincipal, 170);
         doc.text(splitText, 20, y);
@@ -639,7 +639,7 @@
         y += 8;
         doc.setFont("helvetica", "normal");
         
-        let textoDirTitular = `R$ ${formataMoeda(titLiq)}`;
+        let textoDirTitular = `R$ ${formataMoeda(titBruto)}`;
         doc.text(nome, 20, y);
         doc.text(textoDirTitular, 160, y);
         doc.text(".".repeat(50), 95, y); 
@@ -655,7 +655,7 @@
             deps.forEach(d => {
                 const n = d.querySelector('.txt-nome').value.toUpperCase();
                 const cpfDep = d.querySelector('.txt-cpf').value || "";
-                const vL = parseFloat(d.querySelector('.txt-liq').value) || 0;
+                const vL = parseFloat(d.querySelector('.txt-bruto').value) || 0;
                 
                 let textoEsq = cpfDep ? `${n} (Cpf: ${cpfDep})` : n;
                 let textoDir = `R$ ${formataMoeda(vL)}`;
@@ -678,7 +678,7 @@
             
             exs.forEach(e => {
                 const n = e.querySelector('.txt-nome').value.toUpperCase();
-                const vL = parseFloat(e.querySelector('.txt-liq').value) || 0; 
+                const vL = parseFloat(e.querySelector('.txt-bruto').value) || 0; 
                 
                 let textoDir = `R$ ${formataMoeda(vL)}`;
                 
@@ -700,7 +700,7 @@
             
             taxasBoxes.forEach(t => {
                 const n = t.querySelector('.txt-nome').value.toUpperCase();
-                const vL = parseFloat(t.querySelector('.txt-liq').value) || 0; 
+                const vL = parseFloat(t.querySelector('.txt-bruto').value) || 0; 
                 
                 let textoDir = `R$ ${formataMoeda(vL)}`;
                 
@@ -721,7 +721,9 @@
         doc.setFont("helvetica", "normal");
         doc.text(dataFormatada, 105, y, { align: "center" });
 
-        doc.save(`Declaracao_IR_${nome.split(' ')[0]}_ASHPS.pdf`);
+        // Nome do arquivo com o NOME COMPLETO e underline em vez de espaços
+        const nomeArquivo = nome.replace(/\s+/g, '_');
+        doc.save(`Declaracao_IR_${nomeArquivo}_ASHPS.pdf`);
     }
 </script>
 
