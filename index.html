@@ -286,7 +286,7 @@
             const cpf = match[1];
             const valorMensalStr = match[2].replace(/\./g, '').replace(',', '.');
             const valorMensal = parseFloat(valorMensalStr);
-            excecoesVerte[cpf] = valorMensal * 12; // Base anual no PDF original
+            excecoesVerte[cpf] = valorMensal * 12; 
             count++;
         }
         
@@ -367,7 +367,7 @@
             const cpfLimp = document.getElementById('cpfTitular').value.replace(/\D/g, "");
             
             if (conv === "VERTE" && excecoesVerte[cpfLimp]) {
-                const valorMensalVerte = excecoesVerte[cpfLimp] / 12; // Valor unitário por mês
+                const valorMensalVerte = excecoesVerte[cpfLimp] / 12; 
                 valorBrutoTotal = valorMensalVerte * qtdMesesTitular;
                 valorLiquidoTotal = valorBrutoTotal / (1 + taxa);
                 
@@ -417,7 +417,6 @@
             memoriaCalculoTitular += "Aguardando preenchimento da data de nascimento do titular...\n";
         }
 
-        // Atualiza as caixas extra (Exames/Taxas) que dependem apenas de recalcular o líquido
         document.querySelectorAll('.exa-box, .taxa-box').forEach(box => {
             const brutoInput = box.querySelector('.txt-bruto');
             const liqInput = box.querySelector('.txt-liq');
@@ -430,7 +429,6 @@
         somarTudo();
     }
 
-    // Função que calcula o Valor Mensal X Qtd Meses para a linha dos Dependentes
     function calcLinha(el) {
         const box = el.closest('.item-box');
         const mensal = parseFloat(box.querySelector('.txt-mensal').value) || 0;
@@ -528,7 +526,7 @@
                 <input type="number" step="0.01" class="txt-bruto" value="0.00" oninput="calcularLiquido(this)">
             </div>
             <div>
-                <label>Líquido p/ IR</label>
+                <label>Líquido p/ IR (Editável)</label>
                 <input type="number" step="0.01" class="txt-liq input-destaque" value="0.00" oninput="somarTudo()">
             </div>
         `;
@@ -629,11 +627,23 @@
         exs.forEach(e => totalLiqGeral += (parseFloat(e.querySelector('.txt-liq').value) || 0));
         taxasBoxes.forEach(t => totalLiqGeral += (parseFloat(t.querySelector('.txt-liq').value) || 0));
 
-        const textoPrincipal = `Declaramos para os devidos fins de direito que o beneficiário titular, ${nome}, inscrito(a) sob o CPF nº ${cpfTitular}, pagou o valor de R$ ${formataMoeda(totalLiqGeral)} referente a mensalidades do Plano de Saúde ${cnpjs[conv].nome} (CNPJ ${cnpjs[conv].cnpj}), no período de 01/01/2025 a 31/12/2025, conforme detalhamento abaixo:`;
+        const textoPrincipal = `Declaramos para os devidos fins de direito que o beneficiário titular, ${nome}, inscrito(a) sob o CPF nº ${cpfTitular}, pagou o valor total de R$ ${formataMoeda(totalLiqGeral)} referente a mensalidades do Plano de Saúde ${cnpjs[conv].nome} (CNPJ ${cnpjs[conv].cnpj}), no período de 01/01/2025 a 31/12/2025, conforme detalhamento abaixo:`;
         
         const splitText = doc.splitTextToSize(textoPrincipal, 170);
         doc.text(splitText, 20, y);
         y += (splitText.length * 6) + 10;
+
+        // ================= TITULAR =================
+        doc.setFont("helvetica", "bold");
+        doc.text("MENSALIDADE TITULAR", 20, y); 
+        y += 8;
+        doc.setFont("helvetica", "normal");
+        
+        let textoDirTitular = `R$ ${formataMoeda(titLiq)}`;
+        doc.text(nome, 20, y);
+        doc.text(textoDirTitular, 160, y);
+        doc.text(".".repeat(50), 95, y); 
+        y += 10;
 
         // ================= DEPENDENTES =================
         if(deps.length > 0) {
@@ -702,11 +712,6 @@
             });
             y += 5;
         }
-
-        // ================= VALOR MENSALIDADE TITULAR =================
-        y += 5;
-        doc.setFont("helvetica", "bold");
-        doc.text(`Valor Mensalidade Titular: R$ ${formataMoeda(titLiq)}`, 20, y);
 
         y += 30;
         const meses = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
