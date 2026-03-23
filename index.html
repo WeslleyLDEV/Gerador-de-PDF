@@ -640,18 +640,23 @@
         y += 25;
         doc.setFontSize(11);
         
-        const titBruto = parseFloat(document.getElementById('titBruto').value) || 0;
-        let totalBrutoGeral = titBruto;
+        // --- AQUI É ONDE O PDF PEGA OS VALORES CORRETOS ---
+        // Titular: pega o LÍQUIDO
+        const titLiquido = parseFloat(document.getElementById('titLiquido').value) || 0;
+        let totalGeralPDF = titLiquido;
 
         const deps = document.querySelectorAll('.dep-box');
         const exs = document.querySelectorAll('.exa-box');
         const taxasBoxes = document.querySelectorAll('.taxa-box');
 
-        deps.forEach(d => totalBrutoGeral += (parseFloat(d.querySelector('.txt-bruto').value) || 0));
-        exs.forEach(e => totalBrutoGeral += (parseFloat(e.querySelector('.txt-bruto').value) || 0));
-        taxasBoxes.forEach(t => totalBrutoGeral += (parseFloat(t.querySelector('.txt-bruto').value) || 0));
+        // Dependentes e Exames: pegam o LÍQUIDO (.txt-liq)
+        deps.forEach(d => totalGeralPDF += (parseFloat(d.querySelector('.txt-liq').value) || 0));
+        exs.forEach(e => totalGeralPDF += (parseFloat(e.querySelector('.txt-liq').value) || 0));
+        
+        // Taxas Diversas: pegam o VALOR ÚNICO (.txt-bruto) pois não têm líquido
+        taxasBoxes.forEach(t => totalGeralPDF += (parseFloat(t.querySelector('.txt-bruto').value) || 0));
 
-        const textoPrincipal = `Declaramos para os devidos fins de direito que o beneficiário titular, ${nome}, inscrito(a) sob o CPF nº ${cpfTitular}, pagou o valor total de R$ ${formataMoeda(totalBrutoGeral)} referente a mensalidades do Plano de Saúde ${cnpjs[conv].nome} (CNPJ ${cnpjs[conv].cnpj}), no período de 01/01/2025 a 31/12/2025, conforme detalhamento abaixo:`;
+        const textoPrincipal = `Declaramos para os devidos fins de direito que o beneficiário titular, ${nome}, inscrito(a) sob o CPF nº ${cpfTitular}, pagou o valor total de R$ ${formataMoeda(totalGeralPDF)} referente a mensalidades do Plano de Saúde ${cnpjs[conv].nome} (CNPJ ${cnpjs[conv].cnpj}), no período de 01/01/2025 a 31/12/2025, conforme detalhamento abaixo:`;
         
         const splitText = doc.splitTextToSize(textoPrincipal, 170);
         doc.text(splitText, 20, y);
@@ -663,7 +668,7 @@
         y += 8;
         doc.setFont("helvetica", "normal");
         
-        let textoDirTitular = `R$ ${formataMoeda(titBruto)}`;
+        let textoDirTitular = `R$ ${formataMoeda(titLiquido)}`;
         doc.text(nome, 20, y);
         doc.text(textoDirTitular, 160, y);
         doc.text(".".repeat(50), 95, y); 
@@ -679,7 +684,7 @@
             deps.forEach(d => {
                 const n = d.querySelector('.txt-nome').value.toUpperCase();
                 const cpfDep = d.querySelector('.txt-cpf').value || "";
-                const vL = parseFloat(d.querySelector('.txt-bruto').value) || 0;
+                const vL = parseFloat(d.querySelector('.txt-liq').value) || 0;
                 
                 let textoEsq = cpfDep ? `${n} (Cpf: ${cpfDep})` : n;
                 let textoDir = `R$ ${formataMoeda(vL)}`;
@@ -702,7 +707,7 @@
             
             exs.forEach(e => {
                 const n = e.querySelector('.txt-nome').value.toUpperCase();
-                const vL = parseFloat(e.querySelector('.txt-bruto').value) || 0; 
+                const vL = parseFloat(e.querySelector('.txt-liq').value) || 0; 
                 
                 let textoDir = `R$ ${formataMoeda(vL)}`;
                 
