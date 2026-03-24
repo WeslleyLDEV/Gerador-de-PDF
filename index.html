@@ -121,10 +121,10 @@
         <div>
             <label>Mês Reajuste</label>
             <select id="selMesReajuste" onchange="atualizarValores()">
-                <option value="0">Sem Reajuste</option>
+                <option value="0" selected>Sem Reajuste</option>
                 <option value="1">1 - Jan</option>
                 <option value="2">2 - Fev</option>
-                <option value="3" selected>3 - Março</option>
+                <option value="3">3 - Março</option>
                 <option value="4">4 - Abr</option>
                 <option value="5">5 - Mai</option>
                 <option value="6">6 - Jun</option>
@@ -138,7 +138,7 @@
         </div>
         <div>
             <label>% Reajuste</label>
-            <input type="number" id="inputPercReajuste" step="0.01" value="5.00" onchange="atualizarValores()">
+            <input type="number" id="inputPercReajuste" step="0.01" value="0.00" onchange="atualizarValores()">
         </div>
         <div>
             <label>Qtd Meses</label>
@@ -377,9 +377,9 @@
                 memoriaCalculoTitular += `Data de Nascimento: ${nasc} | Mês de Aniversário: ${mesNasc}\n`;
                 
                 if (mesReajuste === 0) {
-                    memoriaCalculoTitular += `Mês do Reajuste: Sem Reajuste (Valor fixo)\n\n`;
+                    memoriaCalculoTitular += `Mês do Reajuste: Sem Reajuste (Valor mantido igual à tabela)\n\n`;
                 } else {
-                    memoriaCalculoTitular += `Mês do Reajuste do Plano: Mês ${mesReajuste} | % do Reajuste: ${percReajuste * 100}%\n\n`;
+                    memoriaCalculoTitular += `Mês do Reajuste do Plano: Mês ${mesReajuste} | % do Reajuste: ${percReajuste * 100}% (Acrescentado na tabela base)\n\n`;
                 }
 
                 memoriaCalculoTitular += `Detalhamento das Mensalidades (Ano Base 2025):\n`;
@@ -397,8 +397,9 @@
 
                     let brutoMes = precos[conv][idx];
 
-                    if (mesReajuste > 0 && mes < mesReajuste) {
-                        brutoMes = brutoMes / (1 + percReajuste);
+                    // NOVA LÓGICA: Se o mês for igual ou maior que o mês de reajuste, soma a porcentagem.
+                    if (mesReajuste > 0 && mes >= mesReajuste) {
+                        brutoMes = brutoMes * (1 + percReajuste);
                     }
 
                     let liqMes = brutoMes / (1 + taxa);
@@ -496,7 +497,7 @@
             const nome = nomeInput.value || "Item s/ nome";
             const b = parseFloat(box.querySelector('.txt-bruto').value) || 0;
             
-            let l = b; // Se não houver campo de líquido (como nas taxas), assume que o líquido = bruto
+            let l = b; 
             const liqInput = box.querySelector('.txt-liq');
             if (liqInput) {
                 l = parseFloat(liqInput.value) || 0;
@@ -640,8 +641,6 @@
         y += 25;
         doc.setFontSize(11);
         
-        // --- AQUI É ONDE O PDF PEGA OS VALORES CORRETOS ---
-        // Titular: pega o LÍQUIDO
         const titLiquido = parseFloat(document.getElementById('titLiquido').value) || 0;
         let totalGeralPDF = titLiquido;
 
@@ -649,11 +648,8 @@
         const exs = document.querySelectorAll('.exa-box');
         const taxasBoxes = document.querySelectorAll('.taxa-box');
 
-        // Dependentes e Exames: pegam o LÍQUIDO (.txt-liq)
         deps.forEach(d => totalGeralPDF += (parseFloat(d.querySelector('.txt-liq').value) || 0));
         exs.forEach(e => totalGeralPDF += (parseFloat(e.querySelector('.txt-liq').value) || 0));
-        
-        // Taxas Diversas: pegam o VALOR ÚNICO (.txt-bruto) pois não têm líquido
         taxasBoxes.forEach(t => totalGeralPDF += (parseFloat(t.querySelector('.txt-bruto').value) || 0));
 
         const textoPrincipal = `Declaramos para os devidos fins de direito que o beneficiário titular, ${nome}, inscrito(a) sob o CPF nº ${cpfTitular}, pagou o valor total de R$ ${formataMoeda(totalGeralPDF)} referente a mensalidades do Plano de Saúde ${cnpjs[conv].nome} (CNPJ ${cnpjs[conv].cnpj}), no período de 01/01/2025 a 31/12/2025, conforme detalhamento abaixo:`;
