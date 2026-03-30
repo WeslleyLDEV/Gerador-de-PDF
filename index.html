@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,29 +19,31 @@
         }
 
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
-        .container { background: white; padding: 40px; max-width: 950px; margin: auto; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        .container { background: white; padding: 40px; max-width: 1050px; margin: auto; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
         
         h2 { color: var(--primary); border-bottom: 3px solid var(--secondary); padding-bottom: 10px; text-align: center; margin-bottom: 30px; }
         h3 { color: var(--primary); margin-top: 30px; font-size: 1.1em; border-left: 5px solid var(--primary); padding: 8px 15px; background: var(--secondary); border-radius: 0 8px 8px 0; }
         
         label { display: block; margin-top: 15px; font-weight: 600; font-size: 0.85em; color: #666; text-transform: uppercase; }
-        input, select { width: 100%; padding: 12px; margin-top: 5px; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 15px; }
-        input:focus, select:focus { border-color: var(--accent); outline: none; }
+        input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 14px; font-family: inherit; }
+        input:focus, select:focus, textarea:focus { border-color: var(--accent); outline: none; }
         
         .input-destaque { background: #e3f2fd; color: #1565c0; font-weight: bold; border-color: #90caf9; }
         .input-destaque:focus { border-color: #1976d2; box-shadow: 0 0 5px rgba(25,118,210,0.3); }
 
-        .info-calculo { display: block; margin-top: 8px; font-size: 0.8em; color: #2e7d32; font-weight: 600; }
-
-        .grid-3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 20px; }
-        .grid-4 { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 20px; }
+        .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+        .grid-7 { display: grid; grid-template-columns: 1fr 1.2fr 1fr 0.8fr 0.7fr 1fr 1fr; gap: 15px; }
 
         .btn-main { width: 100%; padding: 18px; margin-top: 30px; background: var(--primary); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 18px; transition: 0.3s; }
         .btn-main:hover { background: var(--primary-dark); transform: translateY(-2px); }
         
         .btn-add { background: white; color: var(--primary); border: 2px solid var(--primary); padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 15px; font-weight: 600; }
+        
+        .btn-clear { background: #f5f5f5; color: #d32f2f; border: 2px solid #ffcdd2; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 30px; font-weight: 600; width: 100%; transition: 0.3s;}
+        .btn-clear:hover { background: #ffebee; }
 
-        .item-box { border: 1px solid #ddd; padding: 20px; margin-top: 15px; border-radius: 12px; position: relative; background: #fafafa; display: grid; grid-template-columns: 2fr 1fr 1.5fr 1.5fr; gap: 15px; align-items: end; }
+        .item-box { border: 1px solid #ddd; padding: 20px; margin-top: 15px; border-radius: 12px; position: relative; background: #fafafa; display: grid; gap: 15px; align-items: end; }
         .remove-btn { position: absolute; right: 10px; top: 10px; background: #ff5252; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-weight: bold;}
         
         .status-bar { padding: 10px; border-radius: 8px; margin-top: 5px; font-size: 0.85em; font-weight: 500; }
@@ -51,13 +53,15 @@
         .total-box { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 30px; }
         .card-total { background: #fff; border: 2px solid #eee; padding: 20px; border-radius: 12px; text-align: center; }
         .card-total span { display: block; font-size: 0.85em; font-weight: 600; color: #666; text-transform: uppercase; margin-bottom: 5px; }
-        .card-total input { text-align: center; font-size: 1.5em; border: none; padding: 0; margin: 0; background: transparent !important; color: var(--primary-dark); width: 100%;}
+        .card-total input { text-align: center; font-size: 1.5em; border: none; padding: 0; margin: 0; background: transparent !important; color: var(--primary-dark); }
         .card-desc { border-color: #ffcdd2; background: #ffebee; }
         .card-desc input { color: #d32f2f; }
         .card-liq { border-color: var(--primary); background: var(--secondary); }
         .card-liq input { color: var(--primary); font-weight: 800; font-size: 1.8em; }
 
         hr { border: 0; border-top: 2px solid #f0f0f0; margin: 40px 0; }
+        
+        #boxMemoria { display: none; background: #1e1e1e; color: #4af626; padding: 20px; border-radius: 8px; font-family: 'Courier New', Courier, monospace; font-size: 14px; white-space: pre-wrap; margin-top: 15px; line-height: 1.5; border: 2px solid #333; }
     </style>
 </head>
 <body>
@@ -65,15 +69,25 @@
 <div class="container">
     <h2>Gerador de Declaração ASHPS - IR 2026</h2>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+    <div class="grid-4">
         <div>
             <label>1. Importar Planilha</label>
-            <input type="file" accept=".xlsx,.xls" onchange="processarPlanilha(event)">
-            <div id="statusMsg" class="status-bar warn">Aguardando ficheiro...</div>
+            <input type="file" id="fileImport" accept=".xlsx,.xls,.csv" onchange="processarPlanilha(event)">
+            <div id="statusMsg" class="status-bar warn">Aguardando arquivo...</div>
         </div>
         <div>
-            <label>2. Localizar Pessoa</label>
-            <input list="listaBusca" id="inputBusca" oninput="selecionarAssociado()" placeholder="Digite o nome para buscar...">
+            <label>2. Exceções VERTE</label>
+            <textarea id="txtPdfVerte" rows="1" placeholder="Ctrl+V PDF..." oninput="processarTextoPDF()" style="resize: vertical; min-height: 48px; padding: 12px 8px;"></textarea>
+            <div id="statusPdf" class="status-bar warn">Opcional</div>
+        </div>
+        <div>
+            <label>3. Logo PDF (Opcional)</label>
+            <input type="file" id="fileLogo" accept="image/*" onchange="carregarLogo(event)">
+            <div id="statusLogo" class="status-bar warn">Aguardando imagem...</div>
+        </div>
+        <div>
+            <label>4. Localizar Pessoa</label>
+            <input list="listaBusca" id="inputBusca" oninput="selecionarAssociado()" placeholder="Digite o nome...">
             <datalist id="listaBusca"></datalist>
         </div>
     </div>
@@ -81,43 +95,67 @@
     <hr>
 
     <h3>Dados do Beneficiário Titular</h3>
-    <div class="grid-3">
+    <div class="grid-3" style="grid-template-columns: 2fr 1fr 1fr;">
         <div><label>Nome Completo</label><input id="nomeTitular"></div>
         <div><label>CPF</label><input id="cpfTitular" placeholder="000.000.000-00" oninput="mascaraCPF(this)"></div>
         <div><label>Matrícula</label><input id="matTitular"></div>
     </div>
 
-    <div class="grid-4">
+    <div class="grid-7" style="margin-top: 20px;">
         <div>
-            <label>Data de Nascimento</label>
+            <label>Nascimento</label>
             <input type="date" id="nascTitular" onchange="atualizarValores()">
         </div>
         <div>
             <label>Plano de Saúde</label>
             <select id="selConvenio" onchange="atualizarValores()">
                 <option value="UNIMAX">UNIMAX (8%)</option>
-                <option value="UNIFACIL">UNIFÁCIL (8%)</option>
+                <option value="UNIFACIL" selected>UNIFÁCIL (8%)</option>
                 <option value="UNIPART">UNIPART (8%)</option>
                 <option value="VERTE">VERTE SAÚDE (10%)</option>
                 <option value="CCG TOP LIFE">CCG TOP LIFE (20%)</option>
                 <option value="CCG MULTI">CCG MULTI (11,11%)</option>
                 <option value="UNIODONTO">UNIODONTO (31%)</option>
-                <option value="ODONTO EMPRESAS">ODONTO EMPRESAS (64%)</option>
+                <option value="ODONTO EMPRESAS">ODONTO EMPRESAS (63,5%)</option>
                 <option value="ODONTOPREV">ODONTOPREV (5%)</option>
                 <option value="ODONTO UNIFACIL">ODONTO UNIFÁCIL (0%)</option>
             </select>
         </div>
         <div>
-            <label>Pago Bruto (Anual)</label>
+            <label>Mês Reajuste</label>
+            <select id="selMesReajuste" onchange="atualizarValores()">
+                <option value="0" selected>Sem Reajuste</option>
+                <option value="1">1 - Jan</option>
+                <option value="2">2 - Fev</option>
+                <option value="3">3 - Março</option>
+                <option value="4">4 - Abr</option>
+                <option value="5">5 - Mai</option>
+                <option value="6">6 - Jun</option>
+                <option value="7">7 - Jul</option>
+                <option value="8">8 - Ago</option>
+                <option value="9">9 - Set</option>
+                <option value="10">10 - Out</option>
+                <option value="11">11 - Nov</option>
+                <option value="12">12 - Dez</option>
+            </select>
+        </div>
+        <div>
+            <label>% Reajuste</label>
+            <input type="number" id="inputPercReajuste" step="0.01" value="0.00" onchange="atualizarValores()">
+        </div>
+        <div>
+            <label>Qtd Meses</label>
+            <input type="number" id="qtdMesesTitular" value="12" min="1" max="12" onchange="atualizarValores()">
+        </div>
+        <div>
+            <label>Bruto Total</label>
             <input type="number" id="titBruto" step="0.01" value="0.00" oninput="calcularLiquido(this, 'titLiquido')">
         </div>
         <div>
-            <label>Líquido p/ IR (Editável)</label>
-            <input type="number" id="titLiquido" class="input-destaque" step="0.01" value="0.00" oninput="somarTudo()">
+            <label>Líquido p/ IR</label>
+            <input type="number" id="titLiquido" class="input-destaque" step="0.01" value="0.00" oninput="calcularBruto(this, 'titBruto')">
         </div>
     </div>
-    
-    <span id="infoReajuste" class="info-calculo"></span>
 
     <h3>Dependentes Vinculados</h3>
     <div id="areaDeps"></div>
@@ -128,342 +166,3 @@
     <button class="btn-add" style="border-color: #2e7d32; color: #2e7d32;" onclick="novoExame()">+ Adicionar Exame</button>
 
     <h3>Taxas Diversas</h3>
-    <div id="areaTaxas"></div>
-    <button class="btn-add" style="border-color: #f57c00; color: #f57c00;" onclick="novaTaxa()">+ Adicionar Taxa</button>
-
-    <hr>
-
-    <h3 style="text-align: center; border: none; background: none; padding: 0;">Painel de Controlo (Não sai no PDF)</h3>
-    <div class="total-box">
-        <div class="card-total">
-            <span>(+) Total Pago à ASHPS</span>
-            <input type="text" id="displayTotalBruto" readonly value="0,00">
-        </div>
-        <div class="card-total card-desc">
-            <span>(-) Taxa Administrativa</span>
-            <input type="text" id="displayTotalDesconto" readonly value="0,00">
-        </div>
-        <div class="card-total card-liq">
-            <span>(=) TOTAL A DECLARAR</span>
-            <input type="text" id="displayTotalLiquido" readonly value="0,00">
-        </div>
-    </div>
-
-    <button class="btn-main" onclick="gerarPDF()">BAIXAR DECLARAÇÃO EM PDF</button>
-</div>
-
-<script>
-    // =========================================================================
-    // COLE ABAIXO O CÓDIGO BASE64 DA LOGO.PNG CASO O NAVEGADOR BLOQUEIE A LEITURA LOCAL
-    // =========================================================================
-    const logoBase64 = ""; 
-
-    const bancoLocal = new Map();
-    
-    // TABELAS COM A LÓGICA DE MESES ANTERIORES E REAJUSTES
-    const dbPlanos = {
-        UNIMAX: {
-            velho: [400.11, 460.10, 528.93, 608.51, 699.76, 811.80, 982.22, 1277.06, 1723.96, 2397.69],
-            novo: [456.13, 524.51, 602.98, 693.70, 797.73, 925.45, 1119.73, 1455.85, 1965.32, 2733.37],
-            mesesAntigos: 10, // Reajuste em Novembro (10 meses antigos, 2 meses novos)
-            taxa: 0.08, nome: "UNIMED PORTO ALEGRE", cnpj: "87.096.616/0001-96"
-        },
-        UNIPART: {
-            velho: [293.05, 351.37, 411.73, 472.39, 501.11, 577.89, 717.96, 909.91, 1199.45, 1757.99],
-            novo: [321.27, 385.20, 451.38, 517.88, 549.36, 633.53, 787.09, 997.53, 1314.95, 1927.28],
-            mesesAntigos: 6, // Ajuste para 6 caso seja no meio do ano, altere se necessário
-            taxa: 0.08, nome: "UNIMED PORTO ALEGRE", cnpj: "87.096.616/0001-96"
-        },
-        UNIFACIL: {
-            velho: [114.82, 156.44, 187.25, 213.74, 222.34, 226.46, 281.35, 323.46, 445.19, 688.93],
-            novo: [125.87, 171.50, 205.28, 234.32, 243.75, 248.26, 308.44, 354.60, 488.06, 755.27],
-            mesesAntigos: 9, 
-            taxa: 0.08, nome: "UNIMED PORTO ALEGRE", cnpj: "87.096.616/0001-96"
-        },
-        VERTE: {
-            velho: [99.99, 114.96, 132.22, 152.03, 174.86, 200.61, 245.33, 318.91, 430.54, 599.78],
-            novo: [109.98, 126.44, 145.43, 167.22, 192.33, 220.65, 269.84, 350.77, 473.55, 659.70],
-            mesesAntigos: 9, 
-            taxa: 0.10, nome: "VERTE SAÚDE", cnpj: "92.741.016/0001-73"
-        },
-        "CCG TOP LIFE": {
-            velho: [267.34, 310.92, 349.74, 392.00, 435.16, 476.31, 614.57, 685.34, 882.50, 1294.58],
-            novo: [315.40, 366.82, 412.62, 462.48, 513.40, 561.94, 725.06, 808.56, 1041.17, 1527.34],
-            mesesAntigos: 10, 
-            taxa: 0.20, nome: "CLINIPAM", cnpj: "76.882.612/0001-17"
-        },
-        "CCG MULTI": {
-            velho: [238.97, 300.93, 326.73, 354.21, 369.33, 417.13, 589.71, 711.15, 1106.15, 1256.49],
-            novo: [281.93, 355.03, 385.47, 417.89, 435.73, 492.13, 695.73, 839.01, 1305.03, 1482.40],
-            mesesAntigos: 10, 
-            taxa: 0.1111, nome: "CLINIPAM", cnpj: "76.882.612/0001-17"
-        },
-        UNIODONTO: {
-            velho: 38.88, novo: 40.55,
-            mesesAntigos: 7, 
-            taxa: 0.31, nome: "UNIODONTO", cnpj: "88.938.089/0001-82"
-        },
-        "ODONTO EMPRESAS": {
-            velho: 27.49, novo: 28.75,
-            mesesAntigos: 3, 
-            taxa: 0.64, nome: "ODONTO EMPRESAS", cnpj: "40.223.893/0001-59"
-        },
-        ODONTOPREV: {
-            velho: 36.38, novo: 38.05,
-            mesesAntigos: 3, 
-            taxa: 0.05, nome: "ODONTOPREV", cnpj: "58.119.199/0001-51"
-        },
-        "ODONTO UNIFACIL": {
-            velho: 19.55, novo: 20.44,
-            mesesAntigos: 3, 
-            taxa: 0, nome: "ODONTO UNIFÁCIL", cnpj: "87.096.616/0001-96"
-        }
-    };
-
-    function processarPlanilha(e) {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = (evt) => {
-            const wb = XLSX.read(evt.target.result, { type: 'binary' });
-            const dados = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-            const datalist = document.getElementById('listaBusca');
-            
-            bancoLocal.clear();
-            datalist.innerHTML = "";
-
-            dados.forEach(p => {
-                const nome = String(p.NOME || p.Nome || "").toUpperCase().trim();
-                if(nome) {
-                    bancoLocal.set(nome, p);
-                    const opt = document.createElement('option');
-                    opt.value = nome;
-                    datalist.appendChild(opt);
-                }
-            });
-            document.getElementById('statusMsg').textContent = `✓ ${bancoLocal.size} cadastros carregados!`;
-            document.getElementById('statusMsg').className = "status-bar ok";
-        };
-        reader.readAsBinaryString(file);
-    }
-
-    function mascaraCPF(i) {
-        let v = String(i.value).replace(/\D/g, "");
-        if (v.length > 11) v = v.slice(0, 11);
-        v = v.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-        i.value = v;
-    }
-
-    function selecionarAssociado() {
-        const busca = document.getElementById('inputBusca').value.toUpperCase();
-        const p = bancoLocal.get(busca);
-        if(!p) return;
-
-        document.getElementById('nomeTitular').value = busca;
-        document.getElementById('matTitular').value = p.MATRICULA || p.Matricula || "";
-        
-        const cpfCampo = document.getElementById('cpfTitular');
-        cpfCampo.value = p.CPF || p.Cpf || "";
-        mascaraCPF(cpfCampo);
-        
-        let d = p.NASCIMENTO || p.Nascimento;
-        if(d) {
-            if(typeof d === 'number') {
-                const dateObj = XLSX.SSF.parse_date_code(d);
-                document.getElementById('nascTitular').value = `${dateObj.y}-${String(dateObj.m).padStart(2,'0')}-${String(dateObj.d).padStart(2,'0')}`;
-            } else {
-                document.getElementById('nascTitular').value = d;
-            }
-        }
-        atualizarValores();
-    }
-
-    function atualizarValores() {
-        const nasc = document.getElementById('nascTitular').value;
-        const conv = document.getElementById('selConvenio').value;
-        const infoCalculo = document.getElementById('infoReajuste');
-        const plano = dbPlanos[conv];
-
-        if(nasc) {
-            const idade = new Date().getFullYear() - new Date(nasc).getFullYear();
-            let idx = 0;
-            if(idade <= 18) idx=0; else if(idade <= 23) idx=1; else if(idade <= 28) idx=2;
-            else if(idade <= 33) idx=3; else if(idade <= 38) idx=4; else if(idade <= 43) idx=5;
-            else if(idade <= 48) idx=6; else if(idade <= 53) idx=7; else if(idade <= 58) idx=8; else idx=9;
-
-            // Retoma a lógica de meses velhos vs meses novos
-            const vAntigo = Array.isArray(plano.velho) ? plano.velho[idx] : plano.velho;
-            const vNovo = Array.isArray(plano.novo) ? plano.novo[idx] : plano.novo;
-            const mesesVelho = plano.mesesAntigos;
-            const mesesNovo = 12 - mesesVelho;
-
-            const totalBrutoAnual = (vAntigo * mesesVelho) + (vNovo * mesesNovo);
-            
-            document.getElementById('titBruto').value = totalBrutoAnual.toFixed(2);
-            
-            infoCalculo.textContent = `Memória de Cálculo: (${mesesVelho} meses de R$ ${vAntigo.toFixed(2)}) + (${mesesNovo} meses de R$ ${vNovo.toFixed(2)})`;
-        } else {
-            infoCalculo.textContent = "";
-        }
-
-        calcularLiquido(document.getElementById('titBruto'), 'titLiquido');
-
-        document.querySelectorAll('.item-box').forEach(box => {
-            const brutoInput = box.querySelector('.txt-bruto');
-            const liqInput = box.querySelector('.txt-liq');
-            if(brutoInput && liqInput) {
-                const bruto = parseFloat(brutoInput.value) || 0;
-                liqInput.value = (bruto * (1 - plano.taxa)).toFixed(2);
-            }
-        });
-
-        somarTudo();
-    }
-
-    function calcularLiquido(inputBruto, idLiquidoDestino = null) {
-        const conv = document.getElementById('selConvenio').value;
-        const taxa = dbPlanos[conv].taxa;
-        const bruto = parseFloat(inputBruto.value) || 0;
-        const liq = bruto * (1 - taxa);
-
-        if (idLiquidoDestino) {
-            document.getElementById(idLiquidoDestino).value = liq.toFixed(2);
-        } else {
-            const box = inputBruto.closest('.item-box');
-            if(box) box.querySelector('.txt-liq').value = liq.toFixed(2);
-        }
-        somarTudo();
-    }
-
-    function somarTudo() {
-        let totalBruto = parseFloat(document.getElementById('titBruto').value) || 0;
-        let totalLiquido = parseFloat(document.getElementById('titLiquido').value) || 0;
-
-        document.querySelectorAll('.item-box').forEach(box => {
-            totalBruto += parseFloat(box.querySelector('.txt-bruto').value) || 0;
-            totalLiquido += parseFloat(box.querySelector('.txt-liq').value) || 0;
-        });
-
-        let totalDesconto = totalBruto - totalLiquido;
-
-        document.getElementById('displayTotalBruto').value = totalBruto.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-        document.getElementById('displayTotalDesconto').value = totalDesconto.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-        document.getElementById('displayTotalLiquido').value = totalLiquido.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    }
-
-    function criarLinha(areaId, placeholderNome, isDep = false) {
-        const div = document.createElement('div');
-        div.className = 'item-box ' + (isDep ? 'dep-box' : 'exa-box');
-        
-        let htmlExtra = '';
-        if(isDep) {
-            htmlExtra = `<div><label>CPF (Opcional)</label><input class="txt-cpf" placeholder="000.000.000-00" oninput="mascaraCPF(this)"></div>`;
-        }
-
-        div.innerHTML = `
-            <button class="remove-btn" onclick="this.parentElement.remove(); somarTudo();">×</button>
-            <div ${isDep ? '' : 'style="grid-column: span 2;"'}>
-                <label>${placeholderNome}</label>
-                <input class="txt-nome" placeholder="Digite o nome/descrição">
-            </div>
-            ${htmlExtra}
-            <div>
-                <label>Pago Bruto (R$)</label>
-                <input type="number" step="0.01" class="txt-bruto" value="0.00" oninput="calcularLiquido(this)">
-            </div>
-            <div>
-                <label>Líquido p/ IR (Editável)</label>
-                <input type="number" step="0.01" class="txt-liq input-destaque" value="0.00" oninput="somarTudo()">
-            </div>
-        `;
-        document.getElementById(areaId).appendChild(div);
-        somarTudo();
-    }
-
-    function novoDependente() { criarLinha("areaDeps", "Nome do Dependente", true); }
-    function novoExame() { criarLinha("areaExames", "Descrição do Exame / Copart", false); }
-    function novaTaxa() { criarLinha("areaTaxas", "Descrição da Taxa", false); }
-
-    function formataMoeda(valor) {
-        return valor.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    }
-
-    async function gerarPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        
-        try {
-            const img = new Image();
-            img.src = 'logo.png';
-            await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; });
-            doc.addImage(img, 'PNG', 85, 10, 40, 20); 
-        } catch(e) {
-            if (logoBase64 && logoBase64.trim() !== "") {
-                doc.addImage(logoBase64, 'PNG', 85, 10, 40, 20);
-            }
-        }
-
-        let y = 45;
-        const nome = document.getElementById('nomeTitular').value.toUpperCase() || "NÃO INFORMADO";
-        const cpfTitular = document.getElementById('cpfTitular').value || "NÃO INFORMADO";
-        const conv = document.getElementById('selConvenio').value;
-        const planoObj = dbPlanos[conv];
-        
-        doc.setFont("helvetica", "bold").setFontSize(16);
-        doc.text("DECLARAÇÃO", 105, y, { align: "center" });
-        y += 8;
-        doc.setFontSize(12).setFont("helvetica", "normal");
-        doc.text("Para fins de Imposto de Renda", 105, y, { align: "center" });
-        
-        y += 25;
-        doc.setFontSize(11);
-        
-        const titLiq = parseFloat(document.getElementById('titLiquido').value) || 0;
-        let totalLiqGeral = titLiq;
-
-        const textoPrincipal = `Declaramos para os devidos fins de direito que o beneficiário titular, ${nome}, inscrito(a) sob o CPF nº ${cpfTitular}, pagou o valor de R$ ${formataMoeda(titLiq)} referente a mensalidades do Plano de Saúde ${planoObj.nome} (CNPJ ${planoObj.cnpj}), no período de 01/01/2025 a 31/12/2025, conforme detalhamento abaixo:`;
-        
-        const splitText = doc.splitTextToSize(textoPrincipal, 170);
-        doc.text(splitText, 20, y);
-        y += (splitText.length * 6) + 10;
-
-        const itensBoxes = document.querySelectorAll('.item-box');
-        if(itensBoxes.length > 0) {
-            doc.setFont("helvetica", "bold");
-            doc.text("DEPENDENTES / COPARTICIPAÇÕES / TAXAS", 20, y); 
-            y += 8;
-            doc.setFont("helvetica", "normal");
-            
-            itensBoxes.forEach(box => {
-                const n = box.querySelector('.txt-nome').value.toUpperCase();
-                const cpfEl = box.querySelector('.txt-cpf');
-                const cpfText = cpfEl && cpfEl.value ? ` (Cpf: ${cpfEl.value})` : "";
-                const vL = parseFloat(box.querySelector('.txt-liq').value) || 0; 
-                
-                totalLiqGeral += vL;
-                
-                doc.text(n + cpfText, 20, y);
-                doc.text(`R$ ${formataMoeda(vL)}`, 160, y);
-                doc.text(".".repeat(50), 95, y); 
-                y += 8;
-            });
-            y += 5;
-        }
-
-        y += 5;
-        doc.setFont("helvetica", "bold");
-        doc.text(`Valor Total Declarado: R$ ${formataMoeda(totalLiqGeral)}`, 20, y);
-
-        y += 30;
-        const meses = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
-        const dataHoje = new Date();
-        const dataFormatada = `Gravataí - RS, ${dataHoje.getDate()} de ${meses[dataHoje.getMonth()]} de ${dataHoje.getFullYear()}`;
-        
-        doc.setFont("helvetica", "normal");
-        doc.text(dataFormatada, 105, y, { align: "center" });
-
-        doc.save(`Declaracao_IR_${nome.split(' ')[0]}_ASHPS.pdf`);
-    }
-</script>
-
-</body>
-</html>
