@@ -156,62 +156,46 @@
     const logoBase64 = ""; 
     const bancoLocal = new Map();
     
-    // BANCO DE DADOS CORRIGIDO - A DIVISÃO DA UNIMAX É DE 10 MESES ANTIGOS E 2 NOVOS
+    // TABELA ATUALIZADA (Valores Mensais Médios já ajustados na sua tabela Excel de 2026)
     const dbPlanos = {
         UNIMAX: {
-            velho: [400.11, 460.10, 528.93, 608.51, 699.76, 811.80, 982.22, 1277.06, 1723.96, 2397.69],
-            novo: [456.13, 524.51, 602.98, 693.70, 797.73, 925.45, 1119.73, 1455.85, 1965.32, 2733.37],
-            mesesAntigos: 10, // Reajuste em Novembro (10 meses a pagar o valor antigo, 2 a pagar o novo)
+            valores: [456.13, 524.51, 602.98, 693.70, 797.73, 925.45, 1119.73, 1455.85, 1965.32, 2733.37],
             taxa: 0.08, nome: "UNIMED PORTO ALEGRE", cnpj: "87.096.616/0001-96"
         },
         UNIPART: {
-            velho: [293.05, 351.37, 411.73, 472.39, 501.11, 577.89, 717.96, 909.91, 1199.45, 1757.99],
-            novo: [321.27, 385.20, 451.38, 517.88, 549.36, 633.53, 787.09, 997.53, 1314.95, 1927.28],
-            mesesAntigos: 9, 
+            valores: [293.05, 351.37, 411.73, 472.39, 501.11, 577.89, 717.96, 909.91, 1199.45, 1757.99],
             taxa: 0.08, nome: "UNIMED PORTO ALEGRE", cnpj: "87.096.616/0001-96"
         },
         UNIFACIL: {
-            velho: [114.82, 156.44, 187.25, 213.74, 222.34, 226.46, 281.35, 323.46, 445.19, 688.93],
-            novo: [125.87, 171.50, 205.28, 234.32, 243.75, 248.26, 308.44, 354.60, 488.06, 755.27],
-            mesesAntigos: 9, 
+            valores: [121.70, 165.82, 198.49, 226.56, 235.68, 240.05, 298.23, 342.87, 471.90, 730.27],
             taxa: 0.08, nome: "UNIMED PORTO ALEGRE", cnpj: "87.096.616/0001-96"
         },
         VERTE: {
-            velho: [99.99, 114.96, 132.22, 152.03, 174.86, 200.61, 245.33, 318.91, 430.54, 599.78],
-            novo: [109.98, 126.44, 145.43, 167.22, 192.33, 220.65, 269.84, 350.77, 473.55, 659.70],
-            mesesAntigos: 9, 
+            valores: [99.99, 114.96, 132.22, 152.03, 174.86, 200.61, 245.33, 318.91, 430.54, 599.78],
             taxa: 0.10, nome: "VERTE SAÚDE", cnpj: "92.741.016/0001-73"
         },
         "CCG TOP LIFE": {
-            velho: [267.34, 310.92, 349.74, 392.00, 435.16, 476.31, 614.57, 685.34, 882.50, 1294.58],
-            novo: [315.40, 366.82, 412.62, 462.48, 513.40, 561.94, 725.06, 808.56, 1041.17, 1527.34],
-            mesesAntigos: 10, 
+            valores: [267.34, 310.92, 349.74, 392.00, 435.16, 476.31, 614.57, 685.34, 882.50, 1294.58],
             taxa: 0.20, nome: "CLINIPAM", cnpj: "76.882.612/0001-17"
         },
         "CCG MULTI": {
-            velho: [238.97, 300.93, 326.73, 354.21, 369.33, 417.13, 589.71, 711.15, 1106.15, 1256.49],
-            novo: [281.93, 355.03, 385.47, 417.89, 435.73, 492.13, 695.73, 839.01, 1305.03, 1482.40],
-            mesesAntigos: 10, 
+            valores: [238.97, 300.93, 326.73, 354.21, 369.33, 417.13, 589.71, 711.15, 1106.15, 1256.49],
             taxa: 0.1111, nome: "CLINIPAM", cnpj: "76.882.612/0001-17"
         },
         UNIODONTO: {
-            velho: 38.88, novo: 40.55,
-            mesesAntigos: 7, 
+            valores: [38.88, 38.88, 38.88, 38.88, 38.88, 38.88, 38.88, 38.88, 38.88, 38.88],
             taxa: 0.31, nome: "UNIODONTO", cnpj: "88.938.089/0001-82"
         },
         "ODONTO EMPRESAS": {
-            velho: 27.49, novo: 28.75,
-            mesesAntigos: 3, 
+            valores: [27.49, 27.49, 27.49, 27.49, 27.49, 27.49, 27.49, 27.49, 27.49, 27.49],
             taxa: 0.64, nome: "ODONTO EMPRESAS", cnpj: "40.223.893/0001-59"
         },
         ODONTOPREV: {
-            velho: 36.38, novo: 38.05,
-            mesesAntigos: 3, 
+            valores: [36.38, 36.38, 36.38, 36.38, 36.38, 36.38, 36.38, 36.38, 36.38, 36.38],
             taxa: 0.05, nome: "ODONTOPREV", cnpj: "58.119.199/0001-51"
         },
         "ODONTO UNIFACIL": {
-            velho: 19.55, novo: 20.44,
-            mesesAntigos: 3, 
+            valores: [19.55, 19.55, 19.55, 19.55, 19.55, 19.55, 19.55, 19.55, 19.55, 19.55],
             taxa: 0, nome: "ODONTO UNIFÁCIL", cnpj: "87.096.616/0001-96"
         }
     };
@@ -286,16 +270,13 @@
             else if(idade <= 33) idx=3; else if(idade <= 38) idx=4; else if(idade <= 43) idx=5;
             else if(idade <= 48) idx=6; else if(idade <= 53) idx=7; else if(idade <= 58) idx=8; else idx=9;
 
-            const vAntigo = Array.isArray(plano.velho) ? plano.velho[idx] : plano.velho;
-            const vNovo = Array.isArray(plano.novo) ? plano.novo[idx] : plano.novo;
-            const mesesVelho = plano.mesesAntigos;
-            const mesesNovo = 12 - mesesVelho;
-
-            const totalBrutoAnual = (vAntigo * mesesVelho) + (vNovo * mesesNovo);
+            // Pega o valor mensal da tabela atualizada e multiplica por 12 (sem calcular meses quebrados)
+            const valorMensal = plano.valores[idx];
+            const totalBrutoAnual = valorMensal * 12;
             
             document.getElementById('titBruto').value = totalBrutoAnual.toFixed(2);
             
-            infoCalculo.textContent = `Memória de Cálculo: (${mesesVelho} meses de R$ ${vAntigo.toFixed(2)}) + (${mesesNovo} meses de R$ ${vNovo.toFixed(2)})`;
+            infoCalculo.textContent = `Memória de Cálculo: 12 meses de R$ ${valorMensal.toFixed(2)} (Valor Mensal da Tabela Atualizada)`;
         } else {
             infoCalculo.textContent = "";
         }
