@@ -196,30 +196,31 @@
 // TABELAS BASE - Valores ANTES dos reajustes (janeiro) para cálculo dinâmico
 // TABELAS BASE - Valores ANTES das taxas (baseadas nas abas individuais de 2026)
     // TABELAS BASE - Valores para declaração de 2025 ANTES das taxas administrativas
+// TABELAS BASE - Valores OFICIAIS pagos em 2025 (Antes da taxa administrativa da ASHPS)
     const precos = {
-        // Unimax base antes da taxa: 422.34 + 8% taxa = 456.12
+        // UNIMAX: Base 2025 (Ex: 0-18 é 422.34 que com 8% vira 456.12)
         UNIMAX: [422.34, 485.65, 558.31, 642.31, 738.63, 856.89, 1036.79, 1348.00, 1819.73, 2530.89],
         
-        // Unifacil base antes da taxa: 112.68 + 8% taxa = 121.70
-        UNIFACIL: [112.68, 153.54, 183.78, 209.77, 218.22, 222.27, 276.14, 317.47, 436.94, 676.17],
+        // UNIFÁCIL: Base 2025 (Ex: 0-18 é 106.31 que com 8% vira 114.82)
+        UNIFACIL: [106.31, 144.85, 173.38, 197.90, 205.87, 209.69, 260.51, 299.50, 412.21, 637.90],
         
-        // Unipart base antes da taxa
+        // UNIPART: Base 2025
         UNIPART: [271.34, 325.34, 381.23, 437.40, 463.99, 535.08, 664.78, 842.51, 1110.60, 1627.77],
         
-        // Verte base antes da taxa de 10%
+        // VERTE: Base 2025 (Ex: 0-18 é 90.89 que com 10% vira 99.98)
         VERTE: [90.89, 104.50, 120.20, 138.21, 158.95, 182.36, 223.03, 289.91, 391.40, 545.25],
         
-        // CCG TOP LIFE base antes da taxa de 20%
-        "CCG TOP LIFE": [222.78, 259.10, 291.45, 326.66, 362.63, 396.92, 512.14, 571.11, 735.41, 1078.81],
+        // CCG TOP LIFE: Base 2025 (Ex: 59+ é 658.66 que com 20% vira 790.39)
+        "CCG TOP LIFE": [136.02, 158.19, 177.94, 199.44, 221.40, 242.34, 312.68, 348.69, 448.99, 658.66],
         
-        // CCG MULTI base de 2025 antes da taxa de 11.11% (o AnyDesk usa isto como base para o liquido)
-        "CCG MULTI": [215.07, 270.83, 294.05, 318.78, 332.41, 375.08, 530.69, 640.04, 995.53, 1130.85],
+        // CCG MULTI: Base 2025 (Valor 59+ = 942.84 conforme AnyDesk)
+        "CCG MULTI": [179.32, 225.81, 245.17, 265.79, 277.15, 312.73, 442.47, 533.64, 830.03, 942.84],
         
-        // Planos Odonto: Valores BASE de 2025 antes das taxas (31%, 63.5% e 5%)
+        // PLANOS ODONTO: Valores base de 2025 (Antes das taxas de 31%, 63.5% e 5%)
         UNIODONTO: Array(10).fill(27.48),
-        "ODONTO EMPRESAS": Array(10).fill(16.81),
-        ODONTOPREV: Array(10).fill(34.65),
-        "ODONTO UNIFACIL": Array(10).fill(19.55) 
+        "ODONTO EMPRESAS": Array(10).fill(15.75),
+        ODONTOPREV: Array(10).fill(33.26),
+        "ODONTO UNIFACIL": Array(10).fill(19.55)
     };
 
     const taxas = { 
