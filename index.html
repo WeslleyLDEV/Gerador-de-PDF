@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Declaração ASHPS - IR 2026</title>
+    <title>Gerador de Declaração ASHPS - IR 2026 (Ano 2025)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <style>
@@ -14,7 +14,6 @@
         h3 { color: var(--primary); margin-top: 30px; font-size: 1.1em; border-left: 5px solid var(--primary); padding: 8px 15px; background: var(--secondary); border-radius: 0 8px 8px 0; }
         label { display: block; margin-top: 15px; font-weight: 600; font-size: 0.85em; color: #666; text-transform: uppercase; }
         input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 14px; font-family: inherit; }
-        input:focus, select:focus, textarea:focus { border-color: var(--accent); outline: none; }
         .input-destaque { background: #e3f2fd; color: #1565c0; font-weight: bold; border-color: #90caf9; }
         .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; }
         .grid-3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 20px; }
@@ -23,7 +22,6 @@
         .btn-main:hover { background: var(--primary-dark); transform: translateY(-2px); }
         .btn-add { background: white; color: var(--primary); border: 2px solid var(--primary); padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 15px; font-weight: 600; }
         .btn-clear { background: #f5f5f5; color: #d32f2f; border: 2px solid #ffcdd2; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 30px; font-weight: 600; width: 100%; transition: 0.3s;}
-        .btn-clear:hover { background: #ffebee; }
         .item-box { border: 1px solid #ddd; padding: 20px; margin-top: 15px; border-radius: 12px; position: relative; background: #fafafa; display: grid; gap: 15px; align-items: end; }
         .remove-btn { position: absolute; right: 10px; top: 10px; background: #ff5252; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-weight: bold;}
         .status-bar { padding: 10px; border-radius: 8px; margin-top: 5px; font-size: 0.85em; font-weight: 500; }
@@ -34,7 +32,6 @@
         .card-total span { display: block; font-size: 0.85em; font-weight: 600; color: #666; text-transform: uppercase; margin-bottom: 5px; }
         .card-total input { text-align: center; font-size: 1.5em; border: none; padding: 0; margin: 0; background: transparent !important; color: var(--primary-dark); font-weight: bold;}
         .card-desc { border-color: #ffcdd2; background: #ffebee; }
-        .card-desc input { color: #d32f2f; }
         .card-liq { border-color: var(--primary); background: var(--secondary); }
         .card-liq input { color: var(--primary); font-weight: 800; font-size: 1.8em; }
         hr { border: 0; border-top: 2px solid #f0f0f0; margin: 40px 0; }
@@ -44,7 +41,7 @@
 <body>
 
 <div class="container">
-    <h2>Gerador de Declaração ASHPS - IR 2026</h2>
+    <h2>Gerador de Declaração ASHPS - IR 2026 (Ano Base 2025)</h2>
 
     <div class="grid-4">
         <div>
@@ -87,7 +84,7 @@
             <label>Plano de Saúde</label>
             <select id="selConvenio" onchange="atualizarValores()">
                 <option value="UNIMAX">UNIMAX (8%)</option>
-                <option value="UNIFACIL" selected>UNIFÁCIL (8%)</option>
+                <option value="UNIFACIL">UNIFÁCIL (8%)</option>
                 <option value="UNIPART">UNIPART (8%)</option>
                 <option value="VERTE">VERTE SAÚDE (10%)</option>
                 <option value="CCG TOP LIFE">CCG TOP LIFE (20%)</option>
@@ -102,18 +99,9 @@
             <label>Mês Reajuste</label>
             <select id="selMesReajuste" onchange="atualizarValores()">
                 <option value="0" selected>Sem Reajuste</option>
-                <option value="1">1 - Jan</option>
-                <option value="2">2 - Fev</option>
-                <option value="3">3 - Março</option>
-                <option value="4">4 - Abr</option>
-                <option value="5">5 - Mai</option>
-                <option value="6">6 - Jun</option>
-                <option value="7">7 - Jul</option>
-                <option value="8">8 - Ago</option>
-                <option value="9">9 - Set</option>
-                <option value="10">10 - Out</option>
-                <option value="11">11 - Nov</option>
-                <option value="12">12 - Dez</option>
+                <option value="3">3 - Março (Unifácil)</option>
+                <option value="7">7 - Julho (Unipart)</option>
+                <option value="11">11 - Nov (Unimax)</option>
             </select>
         </div>
         <div>
@@ -174,66 +162,26 @@
 
 <script>
     let logoBase64Custom = ""; 
-
-    function carregarLogo(e) {
-        const file = e.target.files[0];
-        if(!file) return;
-        const reader = new FileReader();
-        reader.onload = (evt) => {
-            logoBase64Custom = evt.target.result;
-            const msg = document.getElementById('statusLogo');
-            msg.textContent = "✓ Logo carregada!";
-            msg.className = "status-bar ok";
-        };
-        reader.readAsDataURL(file);
-    }
-
     const bancoLocal = new Map();
     let excecoesVerte = {}; 
     let memoriaCalculoTitular = ""; 
     
-    // TABELAS BASE - Valores ANTES dos reajustes (janeiro) para cálculo dinâmico
-// TABELAS BASE - Valores ANTES dos reajustes (janeiro) para cálculo dinâmico
-// TABELAS BASE - Valores ANTES das taxas (baseadas nas abas individuais de 2026)
-    // TABELAS BASE - Valores para declaração de 2025 ANTES das taxas administrativas
-// TABELAS BASE - Valores OFICIAIS pagos em 2025 (Antes da taxa administrativa da ASHPS)
+    // TABELAS DE JANEIRO 2025 (Valores líquidos antes da taxa ASHPS)
     const precos = {
-        // UNIMAX: Base 2025 (Ex: 0-18 é 422.34 que com 8% vira 456.12)
-        UNIMAX: [422.34, 485.65, 558.31, 642.31, 738.63, 856.89, 1036.79, 1348.00, 1819.73, 2530.89],
-        
-        // UNIFÁCIL: Base 2025 (Ex: 0-18 é 106.31 que com 8% vira 114.82)
-        UNIFACIL: [106.31, 144.85, 173.38, 197.90, 205.87, 209.69, 260.51, 299.50, 412.21, 637.90],
-        
-        // UNIPART: Base 2025
+        UNIMAX: [370.47, 426.01, 489.75, 563.43, 647.92, 751.66, 909.47, 1182.46, 1596.26, 2220.08],
+        UNIFACIL: [101.25, 137.95, 165.12, 188.48, 196.07, 199.70, 248.10, 285.24, 392.58, 607.52],
         UNIPART: [271.34, 325.34, 381.23, 437.40, 463.99, 535.08, 664.78, 842.51, 1110.60, 1627.77],
-        
-        // VERTE: Base 2025 (Ex: 0-18 é 90.89 que com 10% vira 99.98)
-        VERTE: [90.89, 104.50, 120.20, 138.21, 158.95, 182.36, 223.03, 289.91, 391.40, 545.25],
-        
-        // CCG TOP LIFE: Base 2025 (Ex: 59+ é 658.66 que com 20% vira 790.39)
-        "CCG TOP LIFE": [136.02, 158.19, 177.94, 199.44, 221.40, 242.34, 312.68, 348.69, 448.99, 658.66],
-        
-        // CCG MULTI: Base 2025 (Valor 59+ = 942.84 conforme AnyDesk)
-        "CCG MULTI": [179.32, 225.81, 245.17, 265.79, 277.15, 312.73, 442.47, 533.64, 830.03, 942.84],
-        
-        // PLANOS ODONTO: Valores base de 2025 (Antes das taxas de 31%, 63.5% e 5%)
-        UNIODONTO: Array(10).fill(27.48),
-        "ODONTO EMPRESAS": Array(10).fill(15.75),
-        ODONTOPREV: Array(10).fill(33.26),
+        VERTE: [90.90, 104.51, 120.20, 138.21, 158.96, 182.37, 223.03, 289.92, 391.40, 545.25],
+        "CCG TOP LIFE": [163.14, 189.73, 213.42, 239.21, 265.55, 290.66, 375.03, 418.22, 538.53, 789.99],
+        "CCG MULTI": [215.08, 270.84, 294.06, 318.79, 332.41, 375.09, 530.70, 640.05, 995.54, 1130.85],
+        UNIODONTO: Array(10).fill(38.88),
+        "ODONTO EMPRESAS": Array(10).fill(16.81),
+        ODONTOPREV: Array(10).fill(34.65),
         "ODONTO UNIFACIL": Array(10).fill(19.55)
     };
 
     const taxas = { 
-        UNIMAX: 0.08, 
-        UNIFACIL: 0.08, 
-        UNIPART: 0.08, 
-        VERTE: 0.10, 
-        "CCG TOP LIFE": 0.20, 
-        "CCG MULTI": 0.1111, 
-        UNIODONTO: 0.31, 
-        "ODONTO EMPRESAS": 0.635, 
-        ODONTOPREV: 0.05, 
-        "ODONTO UNIFACIL": 0 
+        UNIMAX: 0.08, UNIFACIL: 0.08, UNIPART: 0.08, VERTE: 0.10, "CCG TOP LIFE": 0.20, "CCG MULTI": 0.1111, UNIODONTO: 0.31, "ODONTO EMPRESAS": 0.635, ODONTOPREV: 0.05, "ODONTO UNIFACIL": 0 
     };
 
     const cnpjs = {
@@ -246,7 +194,7 @@
         UNIODONTO: { nome: "UNIODONTO", cnpj: "88.938.089/0001-82" },
         "ODONTO EMPRESAS": { nome: "ODONTO EMPRESAS", cnpj: "40.223.893/0001-59" },
         ODONTOPREV: { nome: "ODONTOPREV", cnpj: "58.119.199/0001-51" },
-        "ODONTO UNIFACIL": { nome: "ODONTO UNIFÁCIL", cnpj: "87.096.616/0001-96" }
+        "ODONTO UNIFACIL": { nome: "UNIMED PORTO ALEGRE", cnpj: "87.096.616/0001-96" }
     };
 
     function processarPlanilha(e) {
@@ -262,56 +210,20 @@
                 const nome = String(linha.B).toUpperCase().trim();
                 if(nome && nome !== "UNDEFINED" && nome !== "") {
                     bancoLocal.set(nome, { Matricula: linha.A, Cpf: linha.C, Nascimento: linha.D });
-                    const opt = document.createElement('option');
-                    opt.value = nome;
-                    datalist.appendChild(opt);
+                    const opt = document.createElement('option'); opt.value = nome; datalist.appendChild(opt);
                 }
             });
-            const msg = document.getElementById('statusMsg');
-            msg.textContent = `✓ ${bancoLocal.size} cadastros processados!`;
-            msg.className = "status-bar ok";
+            const msg = document.getElementById('statusMsg'); msg.textContent = `✓ ${bancoLocal.size} cadastros!`; msg.className = "status-bar ok";
         };
         reader.readAsBinaryString(file);
     }
 
-    function processarTextoPDF() {
-        const texto = document.getElementById('txtPdfVerte').value;
-        const regex = /\b(\d{11})\b\s+\d{2}\/\d{2}\/\d{4}\s+(?:\d+\s+)?([\d.]+,\d{2})/g;
-        let match; let count = 0;
-        while ((match = regex.exec(texto)) !== null) {
-            const cpf = match[1];
-            const valorMensal = parseFloat(match[2].replace(/\./g, '').replace(',', '.'));
-            excecoesVerte[cpf] = valorMensal * 12; count++;
-        }
-        const msg = document.getElementById('statusPdf');
-        if(count > 0) {
-            msg.textContent = `✓ ${Object.keys(excecoesVerte).length} salvos!`;
-            msg.className = "status-bar ok"; atualizarValores(); 
-        } else if (texto.trim().length > 0) {
-            msg.textContent = "Nenhum valor encontrado."; msg.className = "status-bar warn";
-        }
-    }
-
-    function mascaraCPF(i) {
-        let v = String(i.value).replace(/\D/g, "");
-        if (v.length > 11) v = v.slice(0, 11);
-        v = v.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-        i.value = v;
-    }
-
-    function toggleLog() {
-        const box = document.getElementById('boxMemoria');
-        box.style.display = box.style.display === 'block' ? 'none' : 'block';
-    }
-
     function selecionarAssociado() {
         const busca = document.getElementById('inputBusca').value.toUpperCase();
-        const p = bancoLocal.get(busca);
-        if(!p) return;
+        const p = bancoLocal.get(busca); if(!p) return;
         document.getElementById('nomeTitular').value = busca;
         document.getElementById('matTitular').value = p.Matricula || "";
-        const cpfCampo = document.getElementById('cpfTitular');
-        cpfCampo.value = p.Cpf || ""; mascaraCPF(cpfCampo);
+        const cpfCampo = document.getElementById('cpfTitular'); cpfCampo.value = p.Cpf || ""; mascaraCPF(cpfCampo);
         let d = p.Nascimento;
         if(d) {
             if(typeof d === 'number') {
@@ -320,12 +232,11 @@
             } else {
                 let dStr = String(d).trim().split(' ')[0];
                 if(dStr.includes('/')) {
-                    let pts = dStr.split('/');
-                    if(pts.length === 3) dStr = `${pts[2]}-${pts[1].padStart(2,'0')}-${pts[0].padStart(2,'0')}`;
+                    let pts = dStr.split('/'); if(pts.length === 3) dStr = `${pts[2]}-${pts[1].padStart(2,'0')}-${pts[0].padStart(2,'0')}`;
                 }
                 document.getElementById('nascTitular').value = dStr;
             }
-        } else { document.getElementById('nascTitular').value = ""; }
+        }
         atualizarValores();
     }
 
@@ -333,261 +244,101 @@
         const nasc = document.getElementById('nascTitular').value;
         const conv = document.getElementById('selConvenio').value;
         const taxa = taxas[conv] || 0;
-        const mesReajuste = parseInt(document.getElementById('selMesReajuste').value);
-        const percReajuste = parseFloat(document.getElementById('inputPercReajuste').value) / 100;
-        const qtdMesesTitular = parseInt(document.getElementById('qtdMesesTitular').value) || 12;
+        const mesReaj = parseInt(document.getElementById('selMesReajuste').value);
+        const percReaj = parseFloat(document.getElementById('inputPercReajuste').value) / 100;
+        const qtdMeses = parseInt(document.getElementById('qtdMesesTitular').value) || 12;
 
-        let valorBrutoTotal = 0; let valorLiquidoTotal = 0;
-        memoriaCalculoTitular = "=== CÁLCULO DO TITULAR ===\n";
-        memoriaCalculoTitular += `Plano Selecionado: ${conv} | Taxa Administrativa: ${(taxa * 100).toFixed(2)}%\n`;
-        memoriaCalculoTitular += `Meses Pagos no Ano: ${qtdMesesTitular}\n`;
+        let totalBruto = 0; let totalLiquido = 0;
+        memoriaCalculoTitular = `=== CÁLCULO TITULAR (ANO 2025) ===\nPlano: ${conv} | Taxa ASHPS: ${(taxa*100).toFixed(2)}%\n`;
 
         if(nasc) {
             const [anoNasc, mesNasc] = nasc.split('-').map(Number);
-            const anoDeclaracao = 2025; 
-            const cpfLimp = document.getElementById('cpfTitular').value.replace(/\D/g, "");
-            
-            if (conv === "VERTE" && excecoesVerte[cpfLimp]) {
-                const valorMensalVerte = excecoesVerte[cpfLimp] / 12; 
-                valorBrutoTotal = valorMensalVerte * qtdMesesTitular;
-                valorLiquidoTotal = valorBrutoTotal / (1 + taxa);
-                memoriaCalculoTitular += `\n>> EXCEÇÃO APLICADA VERTE: CPF ${cpfLimp} importado do PDF.\n`;
-                memoriaCalculoTitular += `>> Valor do boleto (R$ ${valorMensalVerte.toFixed(2)} x ${qtdMesesTitular} meses) BRUTO fixado: R$ ${valorBrutoTotal.toFixed(2)}\n`;
-            } else {
-                memoriaCalculoTitular += `Data de Nascimento: ${nasc} | Mês de Aniversário: ${mesNasc}\n`;
-                if (mesReajuste === 0) memoriaCalculoTitular += `Mês do Reajuste: Sem Reajuste (Valor mantido igual à tabela)\n\n`;
-                else memoriaCalculoTitular += `Mês do Reajuste do Plano: Mês ${mesReajuste} | % do Reajuste: ${percReajuste * 100}% (Acrescentado na tabela base a partir deste mês)\n\n`;
-                memoriaCalculoTitular += `Detalhamento das Mensalidades (Ano Base 2025):\n`;
-                
-                for(let mes = 1; mes <= qtdMesesTitular; mes++) {
-                    let idadeNoMes = anoDeclaracao - anoNasc;
-                    if (mes < mesNasc) idadeNoMes--; 
-                    
-                    let idx = 0;
-                    if(idadeNoMes <= 18) idx=0; else if(idadeNoMes <= 23) idx=1; else if(idadeNoMes <= 28) idx=2;
-                    else if(idadeNoMes <= 33) idx=3; else if(idadeNoMes <= 38) idx=4; else if(idadeNoMes <= 43) idx=5;
-                    else if(idadeNoMes <= 48) idx=6; else if(idadeNoMes <= 53) idx=7; else if(idadeNoMes <= 58) idx=8; else idx=9;
+            for(let m = 1; m <= qtdMeses; m++) {
+                let idade = 2025 - anoNasc; if (m < mesNasc) idade--;
+                let idx = 0;
+                if(idade <= 18) idx=0; else if(idade <= 23) idx=1; else if(idade <= 28) idx=2;
+                else if(idade <= 33) idx=3; else if(idade <= 38) idx=4; else if(idade <= 43) idx=5;
+                else if(idade <= 48) idx=6; else if(idade <= 53) idx=7; else if(idade <= 58) idx=8; else idx=9;
 
-                    let brutoMes = precos[conv][idx];
-                    if (mesReajuste > 0 && mes >= mesReajuste) brutoMes = brutoMes * (1 + percReajuste);
-                    let liqMes = brutoMes / (1 + taxa);
+                let liqMes = precos[conv][idx];
+                if(mesReaj > 0 && m >= mesReaj) liqMes *= (1 + percReaj);
+                let brutoMes = liqMes * (1 + taxa);
 
-                    valorBrutoTotal += brutoMes; valorLiquidoTotal += liqMes;
-                    memoriaCalculoTitular += `- Mês ${String(mes).padStart(2, '0')}: Idade ${idadeNoMes} (Faixa ${idx+1}) | Bruto: R$ ${brutoMes.toFixed(2)} | Líquido: R$ ${liqMes.toFixed(2)}\n`;
-                }
-                memoriaCalculoTitular += `\nSoma das ${qtdMesesTitular} mensalidades (BRUTO): R$ ${valorBrutoTotal.toFixed(2)}\n`;
+                totalLiquido += liqMes; totalBruto += brutoMes;
+                memoriaCalculoTitular += `Mês ${m}: Idade ${idade} | Líquido: R$ ${liqMes.toFixed(2)} | Bruto: R$ ${brutoMes.toFixed(2)}\n`;
             }
-            document.getElementById('titBruto').value = valorBrutoTotal.toFixed(2);
-            document.getElementById('titLiquido').value = valorLiquidoTotal.toFixed(2);
-        } else {
-            memoriaCalculoTitular += "Aguardando preenchimento da data de nascimento do titular...\n";
+            document.getElementById('titBruto').value = totalBruto.toFixed(2);
+            document.getElementById('titLiquido').value = totalLiquido.toFixed(2);
         }
+        somarTudo();
+    }
 
-        document.querySelectorAll('.exa-box').forEach(box => {
-            const brutoInput = box.querySelector('.txt-bruto');
-            const liqInput = box.querySelector('.txt-liq');
-            if(brutoInput && liqInput) {
-                const bruto = parseFloat(brutoInput.value) || 0;
-                liqInput.value = (bruto / (1 + taxa)).toFixed(2);
-            }
+    function somarTudo() {
+        let bTot = parseFloat(document.getElementById('titBruto').value) || 0;
+        let lTot = parseFloat(document.getElementById('titLiquido').value) || 0;
+        document.querySelectorAll('.item-box').forEach(box => {
+            bTot += parseFloat(box.querySelector('.txt-bruto').value) || 0;
+            lTot += parseFloat(box.querySelector('.txt-liq')?.value || box.querySelector('.txt-bruto').value) || 0;
         });
+        document.getElementById('displayTotalBruto').value = bTot.toLocaleString('pt-PT', {minimumFractionDigits: 2});
+        document.getElementById('displayTotalDesconto').value = (bTot - lTot).toLocaleString('pt-PT', {minimumFractionDigits: 2});
+        document.getElementById('displayTotalLiquido').value = lTot.toLocaleString('pt-PT', {minimumFractionDigits: 2});
+        document.getElementById('boxMemoria').textContent = memoriaCalculoTitular + `\nTOTAL A DECLARAR: R$ ${lTot.toFixed(2)}`;
+    }
+
+    function calcularLiquido(inp, destId) {
+        const taxa = taxas[document.getElementById('selConvenio').value] || 0;
+        const b = parseFloat(inp.value) || 0; const liq = b / (1 + taxa);
+        if(destId) document.getElementById(destId).value = liq.toFixed(2);
+        else inp.closest('.item-box').querySelector('.txt-liq').value = liq.toFixed(2);
         somarTudo();
     }
 
-    function calcularLiquido(inputBruto, idLiquidoDestino = null) {
-        const conv = document.getElementById('selConvenio').value;
-        const taxa = taxas[conv] || 0;
-        const bruto = parseFloat(inputBruto.value) || 0;
-        const liq = bruto / (1 + taxa);
-
-        if (idLiquidoDestino) { document.getElementById(idLiquidoDestino).value = liq.toFixed(2); } 
-        else {
-            const box = inputBruto.closest('.item-box');
-            if(box) { const liqInput = box.querySelector('.txt-liq'); if(liqInput) liqInput.value = liq.toFixed(2); }
-        }
+    function calcularBruto(inp, destId) {
+        const taxa = taxas[document.getElementById('selConvenio').value] || 0;
+        const l = parseFloat(inp.value) || 0; const bruto = l * (1 + taxa);
+        if(destId) document.getElementById(destId).value = bruto.toFixed(2);
+        else inp.closest('.item-box').querySelector('.txt-bruto').value = bruto.toFixed(2);
         somarTudo();
     }
 
-    function calcularBruto(inputLiquido, idBrutoDestino = null) {
-        const conv = document.getElementById('selConvenio').value;
-        const taxa = taxas[conv] || 0;
-        const liq = parseFloat(inputLiquido.value) || 0;
-        const bruto = liq * (1 + taxa);
-
-        if (idBrutoDestino) { document.getElementById(idBrutoDestino).value = bruto.toFixed(2); } 
-        else {
-            const box = inputLiquido.closest('.item-box');
-            if(box) { const brutoInput = box.querySelector('.txt-bruto'); if(brutoInput) brutoInput.value = bruto.toFixed(2); }
-        }
-        somarTudo();
+    function novoDependente() {
+        const div = document.createElement('div'); div.className = 'item-box dep-box'; div.style.gridTemplateColumns = '1.5fr 1fr 1fr 0.8fr 1fr 1fr';
+        div.innerHTML = `<button class="remove-btn" onclick="this.parentElement.remove(); somarTudo();">×</button>
+            <div><label>Nome</label><input class="txt-nome"></div>
+            <div><label>CPF</label><input class="txt-cpf" oninput="mascaraCPF(this)"></div>
+            <div><label>Mensal (R$)</label><input type="number" step="0.01" class="txt-mensal" oninput="calcLinha(this)"></div>
+            <div><label>Meses</label><input type="number" class="txt-meses" value="12" oninput="calcLinha(this)"></div>
+            <div><label>Total Bruto</label><input type="number" step="0.01" class="txt-bruto" oninput="calcularLiquido(this)"></div>
+            <div><label>Líquido IR</label><input type="number" step="0.01" class="txt-liq input-destaque" oninput="calcularBruto(this)"></div>`;
+        document.getElementById("areaDeps").appendChild(div);
     }
 
     function calcLinha(el) {
         const box = el.closest('.item-box');
-        const mensal = parseFloat(box.querySelector('.txt-mensal').value) || 0;
-        const meses = parseInt(box.querySelector('.txt-meses').value) || 12;
-        box.querySelector('.txt-bruto').value = (mensal * meses).toFixed(2);
-        calcularLiquido(box.querySelector('.txt-bruto'));
+        const res = (parseFloat(box.querySelector('.txt-mensal').value) || 0) * (parseInt(box.querySelector('.txt-meses').value) || 12);
+        box.querySelector('.txt-bruto').value = res.toFixed(2); calcularLiquido(box.querySelector('.txt-bruto'));
     }
 
-    function somarTudo() {
-        let totalBruto = parseFloat(document.getElementById('titBruto').value) || 0;
-        let totalLiquido = parseFloat(document.getElementById('titLiquido').value) || 0;
-        const conv = document.getElementById('selConvenio').value;
-        const taxa = taxas[conv] || 0;
-
-        let logFinal = memoriaCalculoTitular + `-> Titular Líquido (após desc. de ${(taxa*100).toFixed(2)}%): R$ ${totalLiquido.toFixed(2)}\n\n`;
-        logFinal += "=== DEPENDENTES E ADICIONAIS ===\n";
-
-        let temAdicional = false;
-        document.querySelectorAll('.item-box').forEach(box => {
-            const nomeInput = box.querySelector('.txt-nome');
-            if(!nomeInput) return; 
-            const nome = nomeInput.value || "Item s/ nome";
-            const b = parseFloat(box.querySelector('.txt-bruto').value) || 0;
-            let l = b; 
-            const liqInput = box.querySelector('.txt-liq');
-            if (liqInput) l = parseFloat(liqInput.value) || 0;
-            
-            totalBruto += b; totalLiquido += l;
-            if(b > 0) {
-                temAdicional = true;
-                logFinal += `- ${nome}: Bruto R$ ${b.toFixed(2)} -> Líquido R$ ${l.toFixed(2)}\n`;
-            }
-        });
-        
-        if(!temAdicional) logFinal += "Nenhum dependente ou taxa adicional informada.\n";
-
-        let totalDesconto = totalBruto - totalLiquido;
-        logFinal += "\n=== RESULTADO FINAL PARA A DECLARAÇÃO ===\n";
-        logFinal += `(+) SOMA BRUTA TOTAL: R$ ${totalBruto.toFixed(2)}\n`;
-        logFinal += `(-) SOMA DE DESCONTOS (Taxas): R$ ${totalDesconto.toFixed(2)}\n`;
-        logFinal += `(=) VALOR FINAL A DECLARAR: R$ ${totalLiquido.toFixed(2)}\n`;
-
-        document.getElementById('boxMemoria').textContent = logFinal;
-        document.getElementById('displayTotalBruto').value = totalBruto.toLocaleString('pt-PT', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-        document.getElementById('displayTotalDesconto').value = totalDesconto.toLocaleString('pt-PT', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-        document.getElementById('displayTotalLiquido').value = totalLiquido.toLocaleString('pt-PT', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    function mascaraCPF(i) {
+        let v = i.value.replace(/\D/g, ""); if (v.length > 11) v = v.slice(0, 11);
+        v = v.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2"); i.value = v;
     }
 
-    function novoDependente() {
-        const div = document.createElement('div');
-        div.className = 'item-box dep-box'; div.style.gridTemplateColumns = '1.5fr 1fr 1fr 0.8fr 1fr 1fr';
-        div.innerHTML = `
-            <button class="remove-btn" onclick="this.parentElement.remove(); somarTudo();">×</button>
-            <div><label>Nome do Dependente</label><input class="txt-nome" placeholder="Ex: Rosa Maria" oninput="somarTudo()"></div>
-            <div><label>CPF</label><input class="txt-cpf" placeholder="000.000.000-00" oninput="mascaraCPF(this)"></div>
-            <div><label>Valor Mensal (R$)</label><input type="number" step="0.01" class="txt-mensal" value="0.00" oninput="calcLinha(this)"></div>
-            <div><label>Meses</label><input type="number" class="txt-meses" value="12" min="1" max="12" oninput="calcLinha(this)"></div>
-            <div><label>Total Bruto</label><input type="number" step="0.01" class="txt-bruto" value="0.00" oninput="calcularLiquido(this)"></div>
-            <div><label>Líquido p/ IR (Editável)</label><input type="number" step="0.01" class="txt-liq input-destaque" value="0.00" oninput="calcularBruto(this)"></div>
-        `;
-        document.getElementById("areaDeps").appendChild(div); somarTudo();
-    }
+    function toggleLog() { const b = document.getElementById('boxMemoria'); b.style.display = b.style.display === 'block' ? 'none' : 'block'; }
 
-    function novoExame() {
-        const div = document.createElement('div');
-        div.className = 'item-box exa-box'; div.style.gridTemplateColumns = '2fr 1fr 1.5fr';
-        div.innerHTML = `
-            <button class="remove-btn" onclick="this.parentElement.remove(); somarTudo();">×</button>
-            <div><label>Descrição do Exame / Coparticipação</label><input class="txt-nome" placeholder="Ex: Exames Laboratoriais" oninput="somarTudo()"></div>
-            <div><label>Pago Bruto (R$)</label><input type="number" step="0.01" class="txt-bruto" value="0.00" oninput="calcularLiquido(this)"></div>
-            <div><label>Líquido p/ IR (Editável)</label><input type="number" step="0.01" class="txt-liq input-destaque" value="0.00" oninput="calcularBruto(this)"></div>
-        `;
-        document.getElementById("areaExames").appendChild(div); somarTudo();
-    }
-
-    function novaTaxa() {
-        const div = document.createElement('div');
-        div.className = 'item-box taxa-box'; div.style.gridTemplateColumns = '3fr 1fr';
-        div.innerHTML = `
-            <button class="remove-btn" onclick="this.parentElement.remove(); somarTudo();">×</button>
-            <div><label>Descrição da Taxa</label><input class="txt-nome" placeholder="Ex: Taxa de Inscrição" oninput="somarTudo()"></div>
-            <div><label>Valor (R$)</label><input type="number" step="0.01" class="txt-bruto" value="0.00" oninput="somarTudo()"></div>
-        `;
-        document.getElementById("areaTaxas").appendChild(div); somarTudo();
-    }
-
-    function limparTudo() {
-        document.getElementById('inputBusca').value = ""; document.getElementById('nomeTitular').value = "";
-        document.getElementById('cpfTitular').value = ""; document.getElementById('matTitular').value = "";
-        document.getElementById('nascTitular').value = ""; document.getElementById('selConvenio').value = "UNIFACIL";
-        document.getElementById('selMesReajuste').value = "0"; document.getElementById('inputPercReajuste').value = "0.00";
-        document.getElementById('qtdMesesTitular').value = "12"; document.getElementById('titBruto').value = "0.00";
-        document.getElementById('titLiquido').value = "0.00";
-        document.getElementById('areaDeps').innerHTML = ""; document.getElementById('areaExames').innerHTML = ""; document.getElementById('areaTaxas').innerHTML = "";
-        somarTudo(); document.getElementById('inputBusca').focus();
-    }
-
-    function formataMoeda(valor) { return valor.toLocaleString('pt-PT', {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
+    function limparTudo() { location.reload(); }
 
     async function gerarPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        try {
-            if (logoBase64Custom && logoBase64Custom.trim() !== "") doc.addImage(logoBase64Custom, 85, 10, 40, 20);
-            else {
-                const img = new Image(); img.src = 'logo.png';
-                await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; });
-                doc.addImage(img, 'PNG', 85, 10, 40, 20); 
-            }
-        } catch(e) { console.log("Logo não enviada ou não encontrada localmente."); }
-
-        let y = 45;
-        const nome = document.getElementById('nomeTitular').value.toUpperCase() || "NÃO INFORMADO";
-        const cpfTitular = document.getElementById('cpfTitular').value || "NÃO INFORMADO";
+        const { jsPDF } = window.jspdf; const doc = new jsPDF();
+        const nome = document.getElementById('nomeTitular').value.toUpperCase() || "NOME";
+        const cpf = document.getElementById('cpfTitular').value;
         const conv = document.getElementById('selConvenio').value;
+        const liqTot = document.getElementById('displayTotalLiquido').value;
         
-        doc.setFont("helvetica", "bold").setFontSize(16);
-        doc.text("DECLARAÇÃO", 105, y, { align: "center" }); y += 8;
-        doc.setFontSize(12).setFont("helvetica", "normal");
-        doc.text("Para fins de Imposto de Renda", 105, y, { align: "center" }); y += 25; doc.setFontSize(11);
-        
-        const titLiquido = parseFloat(document.getElementById('titLiquido').value) || 0;
-        let totalGeralPDF = titLiquido;
-        const deps = document.querySelectorAll('.dep-box'); const exs = document.querySelectorAll('.exa-box'); const taxasBoxes = document.querySelectorAll('.taxa-box');
-
-        deps.forEach(d => totalGeralPDF += (parseFloat(d.querySelector('.txt-liq').value) || 0));
-        exs.forEach(e => totalGeralPDF += (parseFloat(e.querySelector('.txt-liq').value) || 0));
-        taxasBoxes.forEach(t => totalGeralPDF += (parseFloat(t.querySelector('.txt-bruto').value) || 0));
-
-        const textoPrincipal = `Declaramos para os devidos fins de direito que o beneficiário titular, ${nome}, inscrito(a) sob o CPF nº ${cpfTitular}, pagou o valor total de R$ ${formataMoeda(totalGeralPDF)} referente a mensalidades do Plano de Saúde ${cnpjs[conv].nome} (CNPJ ${cnpjs[conv].cnpj}), no período de 01/01/2025 a 31/12/2025, conforme detalhamento abaixo:`;
-        const splitText = doc.splitTextToSize(textoPrincipal, 170); doc.text(splitText, 20, y); y += (splitText.length * 6) + 10;
-
-        doc.setFont("helvetica", "bold"); doc.text("MENSALIDADE TITULAR", 20, y); y += 8; doc.setFont("helvetica", "normal");
-        doc.text(nome, 20, y); doc.text(`R$ ${formataMoeda(titLiquido)}`, 160, y); doc.text(".".repeat(50), 95, y); y += 10;
-
-        if(deps.length > 0) {
-            doc.setFont("helvetica", "bold"); doc.text("DEPENDENTES", 20, y); y += 8; doc.setFont("helvetica", "normal");
-            deps.forEach(d => {
-                const n = d.querySelector('.txt-nome').value.toUpperCase(); const cpfDep = d.querySelector('.txt-cpf').value || "";
-                const vL = parseFloat(d.querySelector('.txt-liq').value) || 0;
-                doc.text(cpfDep ? `${n} (Cpf: ${cpfDep})` : n, 20, y); doc.text(`R$ ${formataMoeda(vL)}`, 160, y); doc.text(".".repeat(50), 95, y); y += 8;
-            }); y += 5;
-        }
-
-        if(exs.length > 0) {
-            doc.setFont("helvetica", "bold"); doc.text("COPARTICIPAÇÕES / EXAMES", 20, y); y += 8; doc.setFont("helvetica", "normal");
-            exs.forEach(e => {
-                const n = e.querySelector('.txt-nome').value.toUpperCase(); const vL = parseFloat(e.querySelector('.txt-liq').value) || 0; 
-                doc.text(n, 20, y); doc.text(`R$ ${formataMoeda(vL)}`, 160, y); doc.text(".".repeat(50), 95, y); y += 8;
-            }); y += 5;
-        }
-
-        if(taxasBoxes.length > 0) {
-            doc.setFont("helvetica", "bold"); doc.text("TAXAS / OUTROS", 20, y); y += 8; doc.setFont("helvetica", "normal");
-            taxasBoxes.forEach(t => {
-                const n = t.querySelector('.txt-nome').value.toUpperCase(); const vL = parseFloat(t.querySelector('.txt-bruto').value) || 0; 
-                doc.text(n, 20, y); doc.text(`R$ ${formataMoeda(vL)}`, 160, y); doc.text(".".repeat(50), 95, y); y += 8;
-            }); y += 5;
-        }
-
-        y += 30;
-        const meses = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
-        const dataHoje = new Date();
-        const dataFormatada = `Porto Alegre, ${dataHoje.getDate()} de ${meses[dataHoje.getMonth()]} de ${dataHoje.getFullYear()}`;
-        doc.setFont("helvetica", "normal"); doc.text(dataFormatada, 105, y, { align: "center" });
-        doc.save(`Declaracao_IR_${nome.replace(/\s+/g, '_')}_ASHPS.pdf`);
+        doc.setFontSize(16).text("DECLARAÇÃO DE PAGAMENTOS - ANO 2025", 105, 40, {align:"center"});
+        doc.setFontSize(11).text(`Declaramos que o associado(a) ${nome}, CPF ${cpf}, efetuou pagamentos à ASHPS referentes ao plano ${cnpjs[conv].nome} (CNPJ ${cnpjs[conv].cnpj}) no valor total dedutível para fins de IR de R$ ${liqTot}.`, 20, 60, {maxWidth: 170});
+        doc.save(`Declaracao_ASHPS_2025_${nome.replace(/\s/g,'_')}.pdf`);
     }
 </script>
 </body>
