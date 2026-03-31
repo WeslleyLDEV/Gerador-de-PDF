@@ -195,21 +195,31 @@
     // TABELAS BASE - Valores ANTES dos reajustes (janeiro) para cálculo dinâmico
 // TABELAS BASE - Valores ANTES dos reajustes (janeiro) para cálculo dinâmico
 // TABELAS BASE - Valores ANTES das taxas (baseadas nas abas individuais de 2026)
+    // TABELAS BASE - Valores para declaração de 2025 ANTES das taxas administrativas
     const precos = {
-        UNIMAX: [400.11, 460.10, 528.93, 608.51, 699.76, 811.80, 982.22, 1277.06, 1723.96, 2397.69],
-        UNIFACIL: [121.70, 165.82, 198.49, 226.56, 235.68, 240.05, 298.23, 342.87, 471.90, 730.27],
-        UNIPART: [293.05, 351.37, 411.73, 472.39, 501.11, 577.89, 717.96, 909.91, 1199.45, 1757.99],
-        VERTE: [99.99, 114.96, 132.22, 152.03, 174.85, 200.60, 245.33, 318.91, 430.54, 599.78],
-        "CCG TOP LIFE": [163.14, 189.73, 213.42, 239.21, 265.55, 290.66, 375.03, 418.22, 538.53, 790.00],
+        // Unimax base antes da taxa: 422.34 + 8% taxa = 456.12
+        UNIMAX: [422.34, 485.65, 558.31, 642.31, 738.63, 856.89, 1036.79, 1348.00, 1819.73, 2530.89],
         
-        // CCG Multi base 2024 SEM a taxa de 11.11%
-        "CCG MULTI": [215.08, 270.84, 294.06, 318.79, 332.41, 375.09, 530.70, 640.05, 995.54, 1130.85],
+        // Unifacil base antes da taxa: 112.68 + 8% taxa = 121.70
+        UNIFACIL: [112.68, 153.54, 183.78, 209.77, 218.22, 222.27, 276.14, 317.47, 436.94, 676.17],
         
-        // Planos Odonto: Valores BASE antes das taxas (31%, 63.5% e 5%)
+        // Unipart base antes da taxa
+        UNIPART: [271.34, 325.34, 381.23, 437.40, 463.99, 535.08, 664.78, 842.51, 1110.60, 1627.77],
+        
+        // Verte base antes da taxa de 10%
+        VERTE: [90.89, 104.50, 120.20, 138.21, 158.95, 182.36, 223.03, 289.91, 391.40, 545.25],
+        
+        // CCG TOP LIFE base antes da taxa de 20%
+        "CCG TOP LIFE": [222.78, 259.10, 291.45, 326.66, 362.63, 396.92, 512.14, 571.11, 735.41, 1078.81],
+        
+        // CCG MULTI base de 2025 antes da taxa de 11.11% (o AnyDesk usa isto como base para o liquido)
+        "CCG MULTI": [215.07, 270.83, 294.05, 318.78, 332.41, 375.08, 530.69, 640.04, 995.53, 1130.85],
+        
+        // Planos Odonto: Valores BASE de 2025 antes das taxas (31%, 63.5% e 5%)
         UNIODONTO: Array(10).fill(27.48),
         "ODONTO EMPRESAS": Array(10).fill(16.81),
         ODONTOPREV: Array(10).fill(34.65),
-        "ODONTO UNIFACIL": Array(10).fill(19.55) // Este não tem taxa (0%) então o final e base são os mesmos
+        "ODONTO UNIFACIL": Array(10).fill(19.55) 
     };
 
     const taxas = { 
