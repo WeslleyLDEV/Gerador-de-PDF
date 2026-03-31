@@ -193,12 +193,16 @@
     let memoriaCalculoTitular = ""; 
     
     // TABELAS BASE - Valores ANTES dos reajustes (janeiro) para cálculo dinâmico
+// TABELAS BASE - Valores ANTES dos reajustes (janeiro) para cálculo dinâmico
     const precos = {
         UNIMAX: [400.11, 460.10, 528.93, 608.51, 699.76, 811.80, 982.22, 1277.06, 1723.96, 2397.69],
         UNIFACIL: [121.70, 165.82, 198.49, 226.56, 235.68, 240.05, 298.23, 342.87, 471.90, 730.27],
         UNIPART: [293.05, 351.37, 411.73, 472.39, 501.11, 577.89, 717.96, 909.91, 1199.45, 1757.99],
         VERTE: [99.99, 114.96, 132.22, 152.03, 174.85, 200.60, 245.33, 318.91, 430.54, 599.78],
-        "CCG TOP LIFE": [163.23, 189.83, 213.53, 239.32, 265.68, 290.81, 375.22, 418.43, 538.79, 790.39],
+        
+        // CORREÇÃO AQUI: CCG TOP LIFE usa a 2ª tabela de 2024 (base antes da taxa)
+        "CCG TOP LIFE": [163.14, 189.73, 213.42, 239.21, 265.55, 290.66, 375.03, 418.22, 538.53, 790.00],
+        
         "CCG MULTI": [238.97, 300.93, 326.73, 354.21, 369.33, 417.13, 589.71, 711.15, 1106.15, 1256.49],
         UNIODONTO: Array(10).fill(38.88),
         "ODONTO EMPRESAS": Array(10).fill(27.49),
