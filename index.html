@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Declaração ASHPS - IR 2026</title>
+    <title>Gerador de Declaração ASHPS - IR 2026 (Ano-Base 2025)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <style>
@@ -85,7 +85,7 @@
         </div>
         <div>
             <label>Plano de Saúde</label>
-            <select id="selConvenio" onchange="atualizarValores()">
+            <select id="selConvenio" onchange="mudarConvenio()">
                 <option value="UNIMAX">UNIMAX (8%)</option>
                 <option value="UNIFACIL" selected>UNIFÁCIL (8%)</option>
                 <option value="UNIPART">UNIPART (8%)</option>
@@ -232,26 +232,65 @@
         "ODONTO UNIFACIL": { nome: "ODONTO UNIFÁCIL", cnpj: "87.096.616/0001-96" }
     };
 
+    // LEITURA DINÂMICA DA PLANILHA (Mapeia colunas independentemente da ordem)
     function processarPlanilha(e) {
         const file = e.target.files[0];
         const reader = new FileReader();
         reader.onload = (evt) => {
             const wb = XLSX.read(evt.target.result, { type: 'binary' });
-            const dados = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: "A", defval: "" });
+            const sheet = wb.Sheets[wb.SheetNames[0]];
+            const dadosArr = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+
             const datalist = document.getElementById('listaBusca');
             bancoLocal.clear(); datalist.innerHTML = "";
-            dados.forEach((linha, index) => {
-                if (index === 0 && String(linha.B).toUpperCase().includes("NOME")) return;
-                const nome = String(linha.B).toUpperCase().trim();
+
+            if(dadosArr.length === 0) return;
+
+            // Tenta achar a linha de cabeçalho verificando onde aparece "NOME"
+            let idxCabecalho = 0;
+            let headers = [];
+            for(let i=0; i < Math.min(10, dadosArr.length); i++) {
+                if(dadosArr[i].some(c => String(c).toUpperCase().includes("NOME"))) {
+                    idxCabecalho = i;
+                    headers = dadosArr[i].map(h => String(h).toUpperCase().trim());
+                    break;
+                }
+            }
+            if(headers.length === 0) headers = dadosArr[0].map(h => String(h).toUpperCase().trim());
+
+            // Mapeia onde cada informação está no Excel importado
+            const mapColunas = {
+                nome: headers.findIndex(h => h.includes("NOME")),
+                mat: headers.findIndex(h => h.includes("MATR")),
+                cpf: headers.findIndex(h => h === "CPF" || h.includes("C.P.F")),
+                nasc: headers.findIndex(h => h.includes("NASC")),
+                plano: headers.findIndex(h => h.includes("PLANO") || h.includes("CONV")),
+                mesReaj: headers.findIndex(h => h.includes("MÊS REAJ") || h.includes("MES REAJ") || h.includes("REAJUSTE")),
+                percReaj: headers.findIndex(h => h.includes("%") || h.includes("PERCENTUAL"))
+            };
+
+            for(let i = idxCabecalho + 1; i < dadosArr.length; i++) {
+                const linha = dadosArr[i];
+                // Fallback para A,B,C,D se a planilha não tiver os headers mapeados perfeitamente
+                const nome = String(mapColunas.nome >= 0 ? linha[mapColunas.nome] : linha[1]).toUpperCase().trim();
+                
                 if(nome && nome !== "UNDEFINED" && nome !== "") {
-                    bancoLocal.set(nome, { Matricula: linha.A, Cpf: linha.C, Nascimento: linha.D });
+                    bancoLocal.set(nome, { 
+                        Matricula: mapColunas.mat >= 0 ? linha[mapColunas.mat] : linha[0], 
+                        Cpf: mapColunas.cpf >= 0 ? linha[mapColunas.cpf] : linha[2], 
+                        Nascimento: mapColunas.nasc >= 0 ? linha[mapColunas.nasc] : linha[3],
+                        Plano: mapColunas.plano >= 0 ? linha[mapColunas.plano] : "",
+                        MesReajuste: mapColunas.mesReaj >= 0 ? linha[mapColunas.mesReaj] : "",
+                        PercReajuste: mapColunas.percReaj >= 0 ? linha[mapColunas.percReaj] : ""
+                    });
                     const opt = document.createElement('option');
                     opt.value = nome;
                     datalist.appendChild(opt);
                 }
-            });
+            }
+
             const msg = document.getElementById('statusMsg');
-            msg.textContent = `✓ ${bancoLocal.size} cadastros processados!`;
+            msg.textContent = `✓ ${bancoLocal.size} cadastros processados dinamicamente!`;
             msg.className = "status-bar ok";
         };
         reader.readAsBinaryString(file);
@@ -287,14 +326,30 @@
         box.style.display = box.style.display === 'block' ? 'none' : 'block';
     }
 
+    function mudarConvenio() {
+        const conv = document.getElementById('selConvenio').value;
+        // Automação para colocar os 14% em novembro direto se for Unimed (Baseado no seu caderno)
+        if (conv.includes('UNI') && conv !== 'UNIODONTO' && conv !== 'ODONTO UNIFACIL') {
+            document.getElementById('selMesReajuste').value = "11";
+            document.getElementById('inputPercReajuste').value = "14.00";
+        } else {
+            document.getElementById('selMesReajuste').value = "0";
+            document.getElementById('inputPercReajuste').value = "0.00";
+        }
+        atualizarValores();
+    }
+
     function selecionarAssociado() {
         const busca = document.getElementById('inputBusca').value.toUpperCase();
         const p = bancoLocal.get(busca);
         if(!p) return;
+        
         document.getElementById('nomeTitular').value = busca;
         document.getElementById('matTitular').value = p.Matricula || "";
+        
         const cpfCampo = document.getElementById('cpfTitular');
         cpfCampo.value = p.Cpf || ""; mascaraCPF(cpfCampo);
+        
         let d = p.Nascimento;
         if(d) {
             if(typeof d === 'number') {
@@ -309,6 +364,32 @@
                 document.getElementById('nascTitular').value = dStr;
             }
         } else { document.getElementById('nascTitular').value = ""; }
+
+        // Automação: Aplica as configurações que vieram da Tabela
+        if (p.Plano) {
+            const selConv = document.getElementById('selConvenio');
+            for (let opt of selConv.options) {
+                if (opt.value.toUpperCase() === String(p.Plano).toUpperCase() || opt.text.toUpperCase().includes(String(p.Plano).toUpperCase())) {
+                    selConv.value = opt.value;
+                    break;
+                }
+            }
+        }
+
+        if (p.MesReajuste) {
+            document.getElementById('selMesReajuste').value = parseInt(p.MesReajuste) || 0;
+        }
+
+        if (p.PercReajuste) {
+            let percFloat = parseFloat(String(p.PercReajuste).replace('%', '').replace(',', '.'));
+            if (percFloat > 0 && percFloat < 1) percFloat = percFloat * 100; // se veio como 0.14 na tabela, vira 14
+            document.getElementById('inputPercReajuste').value = percFloat ? percFloat.toFixed(2) : "0.00";
+        } else {
+            // Se a planilha não tem, chama a função pra popular o padrão do convênio selecionado
+            mudarConvenio();
+            return; // o mudarConvenio já chama o atualizarValores
+        }
+
         atualizarValores();
     }
 
@@ -327,7 +408,7 @@
 
         if(nasc) {
             const [anoNasc, mesNasc] = nasc.split('-').map(Number);
-            const anoDeclaracao = 2025; 
+            const anoDeclaracao = 2025; // IR fixado no Ano-Base 2025
             const cpfLimp = document.getElementById('cpfTitular').value.replace(/\D/g, "");
             
             if (conv === "VERTE" && excecoesVerte[cpfLimp]) {
@@ -352,10 +433,16 @@
                     else if(idadeNoMes <= 48) idx=6; else if(idadeNoMes <= 53) idx=7; else if(idadeNoMes <= 58) idx=8; else idx=9;
 
                     let brutoMes = precos[conv][idx];
-                    if (mesReajuste > 0 && mes >= mesReajuste) brutoMes = brutoMes * (1 + percReajuste);
-                    let liqMes = brutoMes / (1 + taxa);
+                    if (mesReajuste > 0 && mes >= mesReajuste) {
+                        brutoMes = brutoMes * (1 + percReajuste);
+                    }
+                    
+                    // CORREÇÃO: Força o arredondamento financeiro em CADA mês antes de somar.
+                    brutoMes = Number(brutoMes.toFixed(2));
+                    let liqMes = Number((brutoMes / (1 + taxa)).toFixed(2));
 
-                    valorBrutoTotal += brutoMes; valorLiquidoTotal += liqMes;
+                    valorBrutoTotal += brutoMes; 
+                    valorLiquidoTotal += liqMes;
                     memoriaCalculoTitular += `- Mês ${String(mes).padStart(2, '0')}: Idade ${idadeNoMes} (Faixa ${idx+1}) | Bruto: R$ ${brutoMes.toFixed(2)} | Líquido: R$ ${liqMes.toFixed(2)}\n`;
                 }
                 memoriaCalculoTitular += `\nSoma das ${qtdMesesTitular} mensalidades (BRUTO): R$ ${valorBrutoTotal.toFixed(2)}\n`;
@@ -534,6 +621,7 @@
         exs.forEach(e => totalGeralPDF += (parseFloat(e.querySelector('.txt-liq').value) || 0));
         taxasBoxes.forEach(t => totalGeralPDF += (parseFloat(t.querySelector('.txt-bruto').value) || 0));
 
+        // Note aqui que os anos já refletem o ano-base 2025 de forma hardcoded (1/1/2025 a 31/12/2025)
         const textoPrincipal = `Declaramos para os devidos fins de direito que o beneficiário titular, ${nome}, inscrito(a) sob o CPF nº ${cpfTitular}, pagou o valor total de R$ ${formataMoeda(totalGeralPDF)} referente a mensalidades do Plano de Saúde ${cnpjs[conv].nome} (CNPJ ${cnpjs[conv].cnpj}), no período de 01/01/2025 a 31/12/2025, conforme detalhamento abaixo:`;
         const splitText = doc.splitTextToSize(textoPrincipal, 170); doc.text(splitText, 20, y); y += (splitText.length * 6) + 10;
 
