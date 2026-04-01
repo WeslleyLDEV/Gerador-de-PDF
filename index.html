@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Declaração ASHPS - IR 2026 (Base 2025)</title>
+    <title>Gerador de Declaração ASHPS - IR 2026</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <style>
@@ -20,17 +20,15 @@
         .grid-7 { display: grid; grid-template-columns: 1fr 1.2fr 1fr 0.8fr 0.7fr 1fr 1fr; gap: 15px; }
         .btn-main { width: 100%; padding: 18px; margin-top: 30px; background: var(--primary); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 18px; transition: 0.3s; }
         .btn-main:hover { background: var(--primary-dark); transform: translateY(-2px); }
-        .btn-add { background: white; color: var(--primary); border: 2px solid var(--primary); padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 15px; font-weight: 600; }
-        .item-box { border: 1px solid #ddd; padding: 20px; margin-top: 15px; border-radius: 12px; position: relative; background: #fafafa; display: grid; gap: 15px; align-items: end; }
-        .remove-btn { position: absolute; right: 10px; top: 10px; background: #ff5252; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-weight: bold;}
         .status-bar { padding: 10px; border-radius: 8px; margin-top: 5px; font-size: 0.85em; font-weight: 500; }
         .ok { background: #e8f5e9; color: #2e7d32; }
         .warn { background: #fff3e0; color: #ef6c00; }
         .total-box { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 30px; }
         .card-total { background: #fff; border: 2px solid #eee; padding: 20px; border-radius: 12px; text-align: center; }
         .card-liq { border-color: var(--primary); background: var(--secondary); }
-        .card-liq input { color: var(--primary); font-weight: 800; font-size: 1.8em; border: none; text-align: center; background: transparent; width: 100%; }
+        .card-liq input { color: var(--primary); font-weight: 800; font-size: 1.8em; border: none; background: transparent; text-align: center; width: 100%; }
         #boxMemoria { display: none; background: #1e1e1e; color: #4af626; padding: 20px; border-radius: 8px; font-family: monospace; white-space: pre-wrap; margin-top: 15px; border: 2px solid #333; }
+        .remove-btn { background: #ff5252; color: white; border: none; border-radius: 50%; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -46,11 +44,10 @@
         </div>
         <div>
             <label>2. Exceções VERTE</label>
-            <textarea id="txtPdfVerte" rows="1" placeholder="Ctrl+V PDF..." oninput="processarTextoPDF()" style="min-height: 48px;"></textarea>
-            <div id="statusPdf" class="status-bar warn">Opcional</div>
+            <textarea id="txtPdfVerte" rows="1" placeholder="Ctrl+V PDF..." oninput="processarTextoPDF()" style="resize: vertical; min-height: 48px;"></textarea>
         </div>
         <div>
-            <label>3. Logo (Opcional)</label>
+            <label>3. Logo PDF</label>
             <input type="file" id="fileLogo" accept="image/*" onchange="carregarLogo(event)">
         </div>
         <div>
@@ -62,21 +59,18 @@
 
     <hr>
 
-    <h3>Dados do Beneficiário Titular (Ano-Base 2025)</h3>
+    <h3>Dados do Beneficiário Titular</h3>
     <div class="grid-3">
         <div><label>Nome Completo</label><input id="nomeTitular"></div>
-        <div><label>CPF</label><input id="cpfTitular" placeholder="000.000.000-00" oninput="mascaraCPF(this)"></div>
+        <div><label>CPF</label><input id="cpfTitular" oninput="mascaraCPF(this)"></div>
         <div><label>Matrícula</label><input id="matTitular"></div>
     </div>
 
     <div class="grid-7" style="margin-top: 20px;">
-        <div>
-            <label>Nascimento</label>
-            <input type="date" id="nascTitular" onchange="atualizarValores()">
-        </div>
+        <div><label>Nascimento</label><input type="date" id="nascTitular" onchange="atualizarValores()"></div>
         <div>
             <label>Plano de Saúde</label>
-            <select id="selConvenio" onchange="mudarPlano()">
+            <select id="selConvenio" onchange="mudarConvenio()">
                 <option value="UNIMAX">UNIMAX (8%)</option>
                 <option value="UNIFACIL" selected>UNIFÁCIL (8%)</option>
                 <option value="UNIPART">UNIPART (8%)</option>
@@ -93,53 +87,45 @@
             <label>Mês Reajuste</label>
             <select id="selMesReajuste" onchange="atualizarValores()">
                 <option value="0">Sem Reajuste</option>
+                <option value="1">1 - Jan</option>
+                <option value="2">2 - Fev</option>
                 <option value="3">3 - Março</option>
-                <option value="4">4 - Abril</option>
-                <option value="7">7 - Julho</option>
                 <option value="11">11 - Nov</option>
             </select>
         </div>
-        <div>
-            <label>% Reajuste</label>
-            <input type="number" id="inputPercReajuste" step="0.01" value="0.00" onchange="atualizarValores()">
-        </div>
-        <div>
-            <label>Meses Pagos</label>
-            <input type="number" id="qtdMesesTitular" value="12" min="1" max="12" onchange="atualizarValores()">
-        </div>
-        <div>
-            <label>Bruto Total</label>
-            <input type="number" id="titBruto" step="0.01" value="0.00" readonly>
-        </div>
-        <div>
-            <label>Líquido p/ IR</label>
-            <input type="number" id="titLiquido" class="input-destaque" step="0.01" value="0.00" readonly>
-        </div>
+        <div><label>% Reajuste</label><input type="number" id="inputPercReajuste" step="0.01" value="0.00" onchange="atualizarValores()"></div>
+        <div><label>Qtd Meses</label><input type="number" id="qtdMesesTitular" value="12" min="1" max="12" onchange="atualizarValores()"></div>
+        <div><label>Bruto Total</label><input type="number" id="titBruto" step="0.01" oninput="calcularLiquido(this, 'titLiquido')"></div>
+        <div><label>Líquido p/ IR</label><input type="number" id="titLiquido" class="input-destaque" step="0.01" oninput="calcularBruto(this, 'titBruto')"></div>
     </div>
 
-    <h3>Dependentes / Adicionais</h3>
+    <h3>Dependentes / Coparticipações</h3>
     <div id="areaDeps"></div>
-    <button class="btn-add" onclick="novoDependente()">+ Adicionar Dependente</button>
+    <button class="btn-add" onclick="novoDependente()">+ Adicionar Dependente/Item</button>
 
     <div class="total-box">
-        <div class="card-total card-liq" style="grid-column: span 3;">
-            <span>TOTAL A DECLARAR (LÍQUIDO)</span>
-            <input type="text" id="displayTotalLiquido" readonly value="R$ 0,00">
+        <div class="card-total card-liq">
+            <span>TOTAL A DECLARAR (Soma Líquida)</span>
+            <input type="text" id="displayTotalLiquido" readonly value="0,00">
         </div>
     </div>
 
-    <button class="btn-main" onclick="gerarPDF()">BAIXAR DECLARAÇÃO EM PDF</button>
-    <h3 style="cursor: pointer;" onclick="toggleLog()">📜 Ver Memória de Cálculo</h3>
+    <button class="btn-main" onclick="gerarPDF()">BAIXAR PDF (ANO-BASE 2025)</button>
+    <button style="width:100%; margin-top:10px;" onclick="toggleLog()">Exibir Memória de Cálculo</button>
     <div id="boxMemoria"></div>
 </div>
 
 <script>
+    const bancoLocal = new Map();
+    let logoBase64Custom = "";
+    
+    // VALORES ATUALIZADOS CONFORME NOVA PLANILHA (VALOR FINAL COM ASHPS)
     const precos = {
-        UNIMAX: [456.13, 524.51, 602.98, 693.70, 797.74, 925.46, 1119.74, 1455.85, 1965.32, 2733.37],
+        UNIMAX: [456.13, 524.51, 602.98, 693.70, 797.72, 925.45, 1119.73, 1455.85, 1965.32, 2733.37],
         UNIFACIL: [121.70, 165.82, 198.49, 226.56, 235.68, 240.05, 298.23, 342.87, 471.90, 730.27],
         UNIPART: [293.05, 351.37, 411.73, 472.39, 501.11, 577.89, 717.96, 909.91, 1199.45, 1757.99],
         VERTE: [99.99, 114.96, 132.22, 152.03, 174.85, 200.60, 245.33, 318.91, 430.54, 599.78],
-        "CCG TOP LIFE": [267.34, 310.92, 349.74, 392.01, 435.18, 476.36, 614.60, 685.40, 882.50, 1294.58],
+        "CCG TOP LIFE": [267.34, 310.92, 349.74, 391.98, 435.18, 476.33, 614.61, 685.39, 882.50, 1294.58],
         "CCG MULTI": [238.97, 300.93, 326.73, 354.21, 369.33, 417.13, 589.71, 711.15, 1106.15, 1256.49],
         UNIODONTO: Array(10).fill(38.88),
         "ODONTO EMPRESAS": Array(10).fill(25.75),
@@ -153,65 +139,21 @@
         "ODONTO EMPRESAS": 0.635, ODONTOPREV: 0.05, "ODONTO UNIFACIL": 0 
     };
 
-    const configuracoesReajuste = {
-        UNIMAX: { mes: 11, perc: 14 },
-        UNIPART: { mes: 11, perc: 14 },
-        UNIFACIL: { mes: 3, perc: 5 },
-        VERTE: { mes: 11, perc: 17.12 },
-        "CCG TOP LIFE": { mes: 0, perc: 0 },
-        UNIODONTO: { mes: 0, perc: 8 }
+    const cnpjs = {
+        UNIMAX: { nome: "UNIMED PORTO ALEGRE", cnpj: "87.096.616/0001-96" },
+        UNIFACIL: { nome: "UNIMED PORTO ALEGRE", cnpj: "87.096.616/0001-96" },
+        CCG: { nome: "CLINIPAM (CCG)", cnpj: "76.882.612/0001-17" },
+        VERTE: { nome: "VERTE SAÚDE", cnpj: "92.741.016/0001-73" }
     };
 
-    const bancoLocal = new Map();
-
-    function mudarPlano() {
+    function mudarConvenio() {
         const conv = document.getElementById('selConvenio').value;
-        const config = configuracoesReajuste[conv] || { mes: 0, perc: 0 };
-        document.getElementById('selMesReajuste').value = config.mes;
-        document.getElementById('inputPercReajuste').value = config.perc.toFixed(2);
-        atualizarValores();
-    }
-
-    function processarPlanilha(e) {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = (evt) => {
-            const wb = XLSX.read(evt.target.result, { type: 'binary' });
-            const dados = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: "A", defval: "" });
-            bancoLocal.clear();
-            dados.forEach((linha, idx) => {
-                if (idx === 0) return;
-                const nome = String(linha.B).toUpperCase().trim();
-                if(nome) bancoLocal.set(nome, { Matricula: linha.A, Cpf: linha.C, Nascimento: linha.D });
-            });
-            document.getElementById('statusMsg').textContent = `✓ ${bancoLocal.size} cadastros prontos!`;
-            document.getElementById('statusMsg').className = "status-bar ok";
-            popularDatalist();
-        };
-        reader.readAsBinaryString(file);
-    }
-
-    function popularDatalist() {
-        const list = document.getElementById('listaBusca');
-        list.innerHTML = "";
-        bancoLocal.forEach((v, k) => {
-            const opt = document.createElement('option');
-            opt.value = k;
-            list.appendChild(opt);
-        });
-    }
-
-    function selecionarAssociado() {
-        const nome = document.getElementById('inputBusca').value.toUpperCase();
-        const p = bancoLocal.get(nome);
-        if(!p) return;
-        document.getElementById('nomeTitular').value = nome;
-        document.getElementById('matTitular').value = p.Matricula;
-        document.getElementById('cpfTitular').value = p.Cpf;
-        if(p.Nascimento) {
-            const data = typeof p.Nascimento === 'number' ? 
-                XLSX.SSF.parse_date_code(p.Nascimento) : {y:1970, m:1, d:1};
-            document.getElementById('nascTitular').value = `${data.y}-${String(data.m).padStart(2,'0')}-${String(data.d).padStart(2,'0')}`;
+        if (conv.includes('UNIMAX')) {
+            document.getElementById('selMesReajuste').value = "11";
+            document.getElementById('inputPercReajuste').value = "14.00";
+        } else {
+            document.getElementById('selMesReajuste').value = "0";
+            document.getElementById('inputPercReajuste').value = "0.00";
         }
         atualizarValores();
     }
@@ -224,69 +166,124 @@
         const percReaj = parseFloat(document.getElementById('inputPercReajuste').value) / 100;
         const qtdMeses = parseInt(document.getElementById('qtdMesesTitular').value) || 12;
 
-        let brutoAcumulado = 0;
-        let liquidoAcumulado = 0;
-        let log = `CÁLCULO PARA: ${conv} (Ano 2025)\n`;
+        let brutoAnual = 0;
+        let log = `Cálculo para ${conv}:\n`;
 
         if(nasc) {
-            const [anoN, mesN] = nasc.split('-').map(Number);
-            for(let m = 1; m <= qtdMeses; m++) {
-                let idade = 2025 - anoN;
-                if(m < mesN) idade--;
-                
+            const anoNasc = parseInt(nasc.split('-')[0]);
+            const mesNasc = parseInt(nasc.split('-')[1]);
+            
+            for(let m=1; m<=qtdMeses; m++) {
+                let idade = 2025 - anoNasc;
+                if(m < mesNasc) idade--;
+
                 let idx = 0;
                 if(idade <= 18) idx=0; else if(idade <= 23) idx=1; else if(idade <= 28) idx=2;
                 else if(idade <= 33) idx=3; else if(idade <= 38) idx=4; else if(idade <= 43) idx=5;
                 else if(idade <= 48) idx=6; else if(idade <= 53) idx=7; else if(idade <= 58) idx=8; else idx=9;
 
-                let valorBase = precos[conv][idx];
-                if(mesReaj > 0 && m >= mesReaj) {
-                    valorBase = Number((valorBase * (1 + percReaj)).toFixed(2));
-                }
+                let valorMes = precos[conv][idx];
+                if(mesReaj > 0 && m >= mesReaj) valorMes = valorMes * (1 + percReaj);
                 
-                let liqMes = Number((valorBase / (1 + taxa)).toFixed(2));
-                brutoAcumulado += valorBase;
-                liquidoAcumulado += liqMes;
-                log += `Mês ${m}: Idade ${idade} -> Bruto R$ ${valorBase.toFixed(2)} | Líq R$ ${liqMes.toFixed(2)}\n`;
+                valorMes = Number(valorMes.toFixed(2));
+                brutoAnual += valorMes;
             }
         }
-
-        document.getElementById('titBruto').value = brutoAcumulado.toFixed(2);
-        document.getElementById('titLiquido').value = liquidoAcumulado.toFixed(2);
-        document.getElementById('boxMemoria').textContent = log;
-        somarGeral();
+        document.getElementById('titBruto').value = brutoAnual.toFixed(2);
+        calcularLiquido(document.getElementById('titBruto'), 'titLiquido');
     }
 
-    function somarGeral() {
-        let total = parseFloat(document.getElementById('titLiquido').value) || 0;
+    function calcularLiquido(el, destId) {
+        const conv = document.getElementById('selConvenio').value;
+        const taxa = taxas[conv] || 0;
+        const liq = parseFloat(el.value) / (1 + taxa);
+        document.getElementById(destId).value = liq.toFixed(2);
+        somarTudo();
+    }
+
+    function calcularBruto(el, destId) {
+        const conv = document.getElementById('selConvenio').value;
+        const taxa = taxas[conv] || 0;
+        const bruto = parseFloat(el.value) * (1 + taxa);
+        document.getElementById(destId).value = bruto.toFixed(2);
+        somarTudo();
+    }
+
+    function somarTudo() {
+        let totalLiq = parseFloat(document.getElementById('titLiquido').value) || 0;
         document.querySelectorAll('.dep-liq').forEach(input => {
-            total += parseFloat(input.value) || 0;
+            totalLiq += parseFloat(input.value) || 0;
         });
-        document.getElementById('displayTotalLiquido').value = `R$ ${total.toLocaleString('pt-BR', {minimumFractionDigits:2})}`;
+        document.getElementById('displayTotalLiquido').value = totalLiq.toLocaleString('pt-BR', {minimumFractionDigits: 2});
     }
 
     function novoDependente() {
-        const area = document.getElementById('areaDeps');
         const div = document.createElement('div');
         div.className = 'item-box';
         div.innerHTML = `
-            <button class="remove-btn" onclick="this.parentElement.remove(); somarGeral();">×</button>
-            <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:10px;">
-                <div><label>Nome</label><input placeholder="Nome do Dependente"></div>
-                <div><label>Bruto Anual</label><input type="number" class="dep-bruto" step="0.01" value="0.00" oninput="calcDep(this)"></div>
-                <div><label>Líquido IR</label><input type="number" class="dep-liq input-destaque" step="0.01" value="0.00" readonly></div>
+            <div class="grid-3">
+                <input placeholder="Nome Dependente / Item" class="dep-nome">
+                <input type="number" placeholder="Bruto" step="0.01" oninput="calcularLinha(this, 'L')">
+                <input type="number" placeholder="Líquido" step="0.01" class="dep-liq" oninput="calcularLinha(this, 'B')">
+                <button class="remove-btn" onclick="this.parentElement.parentElement.remove(); somarTudo();">X</button>
             </div>
         `;
-        area.appendChild(div);
+        document.getElementById('areaDeps').appendChild(div);
     }
 
-    function calcDep(el) {
+    function calcularLinha(el, tipo) {
         const conv = document.getElementById('selConvenio').value;
         const taxa = taxas[conv] || 0;
-        const bruto = parseFloat(el.value) || 0;
-        const liqInput = el.parentElement.nextElementSibling.querySelector('input');
-        liqInput.value = (bruto / (1 + taxa)).toFixed(2);
-        somarGeral();
+        const row = el.parentElement;
+        if(tipo === 'L') {
+            const v = parseFloat(el.value) / (1 + taxa);
+            row.querySelector('.dep-liq').value = v.toFixed(2);
+        } else {
+            const v = parseFloat(el.value) * (1 + taxa);
+            row.querySelectorAll('input')[1].value = v.toFixed(2);
+        }
+        somarTudo();
+    }
+
+    function processarPlanilha(e) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            const wb = XLSX.read(evt.target.result, { type: 'binary' });
+            const ws = wb.Sheets[wb.SheetNames[0]];
+            const dados = XLSX.utils.sheet_to_json(ws);
+            dados.forEach(r => {
+                const nome = String(r.NOME || r.Nome || "").toUpperCase().trim();
+                if(nome) bancoLocal.set(nome, r);
+            });
+            document.getElementById('statusMsg').textContent = "Planilha Carregada!";
+            document.getElementById('statusMsg').className = "status-bar ok";
+            
+            const list = document.getElementById('listaBusca');
+            bancoLocal.forEach((v, k) => {
+                const opt = document.createElement('option');
+                opt.value = k;
+                list.appendChild(opt);
+            });
+        };
+        reader.readAsBinaryString(file);
+    }
+
+    function selecionarAssociado() {
+        const nome = document.getElementById('inputBusca').value.toUpperCase();
+        const p = bancoLocal.get(nome);
+        if(p) {
+            document.getElementById('nomeTitular').value = nome;
+            document.getElementById('cpfTitular').value = p.CPF || p.Cpf || "";
+            document.getElementById('matTitular').value = p.MATRICULA || p.Matricula || "";
+            let nasc = p.NASCIMENTO || p.Nasc || "";
+            if(typeof nasc === 'number') {
+                const d = XLSX.SSF.parse_date_code(nasc);
+                nasc = `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
+            }
+            document.getElementById('nascTitular').value = nasc;
+            atualizarValores();
+        }
     }
 
     function mascaraCPF(i) {
@@ -296,25 +293,30 @@
     }
 
     function toggleLog() {
-        const box = document.getElementById('boxMemoria');
-        box.style.display = box.style.display === 'block' ? 'none' : 'block';
+        const b = document.getElementById('boxMemoria');
+        b.style.display = b.style.display === 'block' ? 'none' : 'block';
     }
 
     async function gerarPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        const nome = document.getElementById('nomeTitular').value || "ASSOCIADO";
         const total = document.getElementById('displayTotalLiquido').value;
-        
+        const nome = document.getElementById('nomeTitular').value;
+        const cpf = document.getElementById('cpfTitular').value;
+        const conv = document.getElementById('selConvenio').value;
+
         doc.setFontSize(16);
-        doc.text("DECLARAÇÃO DE PAGAMENTOS - ANO BASE 2025", 105, 40, {align:"center"});
+        doc.text("DECLARAÇÃO DE PAGAMENTOS - IR 2026", 105, 40, {align: "center"});
         doc.setFontSize(12);
-        doc.text(`Nome: ${nome}`, 20, 60);
-        doc.text(`CPF: ${document.getElementById('cpfTitular').value}`, 20, 70);
-        doc.text(`Valor Total Declarado: ${total}`, 20, 90);
-        doc.text(`Porto Alegre, ${new Date().toLocaleDateString('pt-BR')}`, 105, 150, {align:"center"});
+        doc.text(`Beneficiário: ${nome}`, 20, 60);
+        doc.text(`CPF: ${cpf}`, 20, 70);
+        doc.text(`Ano-Base: 2025`, 20, 80);
         
-        doc.save(`Declaracao_ASHPS_${nome}.pdf`);
+        let txt = `Declaramos que o associado acima efetuou pagamentos à ASHPS no valor total de R$ ${total} referente ao plano ${conv} no período de 01/01/2025 a 31/12/2025.`;
+        doc.text(doc.splitTextToSize(txt, 170), 20, 100);
+        
+        doc.text("Porto Alegre, " + new Date().toLocaleDateString(), 20, 150);
+        doc.save(`Declaracao_${nome}.pdf`);
     }
 </script>
 </body>
