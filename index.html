@@ -44,11 +44,11 @@
 <body>
 
 <div class="container">
-    <h2>Gerador de Declaração ASHPS - IR 2026</h2>
+    <h2>Gerador de Declaração ASHPS - IR 2026 (Ano Base 2025)</h2>
 
     <div class="grid-4">
         <div>
-            <label>1. Importar Planilha</label>
+            <label>1. Importar Usuários</label>
             <input type="file" id="fileImport" accept=".xlsx,.xls,.csv" onchange="processarPlanilha(event)">
             <div id="statusMsg" class="status-bar warn">Aguardando arquivo...</div>
         </div>
@@ -174,6 +174,9 @@
 
 <script>
     let logoBase64Custom = ""; 
+    const bancoLocal = new Map();
+    let excecoesVerte = {}; 
+    let memoriaCalculoTitular = ""; 
 
     function carregarLogo(e) {
         const file = e.target.files[0];
@@ -187,18 +190,14 @@
         };
         reader.readAsDataURL(file);
     }
-
-    const bancoLocal = new Map();
-    let excecoesVerte = {}; 
-    let memoriaCalculoTitular = ""; 
     
-    // TABELAS ATUALIZADAS (Conforme sua planilha - já com valor bruto final ASHPS)
+    // TABELAS BASE (Valores originais para Janeiro de 2025, ANTES de novos reajustes do ano)
     const precos = {
-        UNIMAX: [456.13, 524.51, 602.98, 693.70, 797.72, 925.45, 1119.73, 1455.85, 1965.32, 2733.37],
+        UNIMAX: [400.11, 460.10, 528.93, 608.51, 699.76, 811.80, 982.22, 1277.06, 1723.96, 2397.69],
         UNIFACIL: [121.70, 165.82, 198.49, 226.56, 235.68, 240.05, 298.23, 342.87, 471.90, 730.27],
         UNIPART: [293.05, 351.37, 411.73, 472.39, 501.11, 577.89, 717.96, 909.91, 1199.45, 1757.99],
         VERTE: [99.99, 114.96, 132.22, 152.03, 174.85, 200.60, 245.33, 318.91, 430.54, 599.78],
-        "CCG TOP LIFE": [267.34, 310.92, 349.74, 391.98, 435.18, 476.33, 614.61, 685.39, 882.50, 1294.58],
+        "CCG TOP LIFE": [163.23, 189.83, 213.53, 239.32, 265.68, 290.81, 375.22, 418.43, 538.79, 790.39],
         "CCG MULTI": [238.97, 300.93, 326.73, 354.21, 369.33, 417.13, 589.71, 711.15, 1106.15, 1256.49],
         UNIODONTO: Array(10).fill(38.88),
         "ODONTO EMPRESAS": Array(10).fill(25.75),
@@ -232,16 +231,16 @@
         "ODONTO UNIFACIL": { nome: "ODONTO UNIFÁCIL", cnpj: "87.096.616/0001-96" }
     };
 
-    // VOLTOU PARA A LEITURA ORIGINAL (QUE FUNCIONOU DESDE O COMEÇO)
     function processarPlanilha(e) {
         const file = e.target.files[0];
         const reader = new FileReader();
         reader.onload = (evt) => {
             const wb = XLSX.read(evt.target.result, { type: 'binary' });
-            // Usa header: "A" para não depender de onde está o cabeçalho
+            // Leitura simples das colunas A, B, C e D da sua planilha de associados
             const dados = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: "A", defval: "" });
             const datalist = document.getElementById('listaBusca');
             bancoLocal.clear(); datalist.innerHTML = "";
+            
             dados.forEach((linha, index) => {
                 if (index === 0 && String(linha.B).toUpperCase().includes("NOME")) return;
                 const nome = String(linha.B).toUpperCase().trim();
@@ -291,8 +290,8 @@
 
     function mudarConvenio() {
         const conv = document.getElementById('selConvenio').value;
-        // Se for Unimax, preenche automático 14% em novembro (para evitar esquecer)
-        if (conv === 'UNIMAX') {
+        // Automatizando os 14% em novembro (para evitar esquecer no caso da Unimed)
+        if (conv.includes('UNI') && conv !== 'UNIODONTO' && conv !== 'ODONTO UNIFACIL') {
             document.getElementById('selMesReajuste').value = "11";
             document.getElementById('inputPercReajuste').value = "14.00";
         } else {
@@ -345,7 +344,7 @@
 
         if(nasc) {
             const [anoNasc, mesNasc] = nasc.split('-').map(Number);
-            const anoDeclaracao = 2025; 
+            const anoDeclaracao = 2025; // Calculando tudo referente a 2025
             const cpfLimp = document.getElementById('cpfTitular').value.replace(/\D/g, "");
             
             if (conv === "VERTE" && excecoesVerte[cpfLimp]) {
@@ -357,7 +356,7 @@
             } else {
                 memoriaCalculoTitular += `Data de Nascimento: ${nasc} | Mês de Aniversário: ${mesNasc}\n`;
                 if (mesReajuste === 0) memoriaCalculoTitular += `Mês do Reajuste: Sem Reajuste (Valor mantido igual à tabela)\n\n`;
-                else memoriaCalculoTitular += `Mês do Reajuste do Plano: Mês ${mesReajuste} | % do Reajuste: ${percReajuste * 100}% (Acrescentado na tabela base a partir deste mês)\n\n`;
+                else memoriaCalculoTitular += `Mês do Reajuste do Plano: Mês ${mesReajuste} | % do Reajuste: ${(percReajuste * 100).toFixed(2)}% (Acrescentado a partir deste mês)\n\n`;
                 memoriaCalculoTitular += `Detalhamento das Mensalidades (Ano Base 2025):\n`;
                 
                 for(let mes = 1; mes <= qtdMesesTitular; mes++) {
@@ -370,11 +369,12 @@
                     else if(idadeNoMes <= 48) idx=6; else if(idadeNoMes <= 53) idx=7; else if(idadeNoMes <= 58) idx=8; else idx=9;
 
                     let brutoMes = precos[conv][idx];
+                    
                     if (mesReajuste > 0 && mes >= mesReajuste) {
                         brutoMes = brutoMes * (1 + percReajuste);
                     }
                     
-                    // CORREÇÃO: Força o arredondamento de duas casas em CADA mês antes de somar, assim como no papel
+                    // Força arredondamento em CADA mês antes de somar para garantir exatidão
                     brutoMes = Number(brutoMes.toFixed(2));
                     let liqMes = Number((brutoMes / (1 + taxa)).toFixed(2));
 
@@ -443,6 +443,7 @@
         const conv = document.getElementById('selConvenio').value;
         const taxa = taxas[conv] || 0;
 
+        // Reconstrói a Memória de Cálculo para bater com o visual
         let logFinal = memoriaCalculoTitular + `-> Titular Líquido (após desc. de ${(taxa*100).toFixed(2)}%): R$ ${totalLiquido.toFixed(2)}\n\n`;
         logFinal += "=== DEPENDENTES E ADICIONAIS ===\n";
 
