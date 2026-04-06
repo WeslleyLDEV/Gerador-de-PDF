@@ -190,7 +190,6 @@
     let excecoesVerte = {}; 
     let memoriaCalculoTitular = ""; 
 
-    // Mapeamento automático
     let mesesReajusteBase = {
         "UNIMAX": 11, "UNIFACIL": 3, "UNIPART": 7, "VERTE": 11,
         "ODONTO EMPRESAS": 4, "UNIODONTO": 1, "ODONTOPREV": 1, 
@@ -216,7 +215,6 @@
         reader.readAsDataURL(file);
     }
     
-    // TABELAS BASE PADRÃO
     let precos = {
         UNIMAX: [400.11, 460.10, 528.93, 608.51, 699.76, 811.80, 982.22, 1277.06, 1723.96, 2397.69],
         UNIFACIL: [121.70, 165.82, 198.49, 226.56, 235.68, 240.05, 298.23, 342.87, 471.90, 730.27],
@@ -281,7 +279,6 @@
                         let mesEncontrado = false;
                         let colPercIdx = 1; 
                         
-                        // Passo 1: Achar o mês e a coluna do reajuste
                         for (let r = 0; r < Math.min(dataTab.length, 15); r++) {
                             if(!dataTab[r]) continue;
                             let linhaStr = dataTab[r].join(" ").toUpperCase();
@@ -300,7 +297,6 @@
                             }
                         }
 
-                        // Passo 2: ACHAR O REAJUSTE NA LINHA 0-18 (Ignorando se for zero ou traço)
                         for (let r = 0; r < dataTab.length; r++) {
                             if(!dataTab[r]) continue;
                             let col0 = String(dataTab[r][0] || "").trim().toUpperCase();
@@ -318,19 +314,17 @@
                                     
                                     if (val > 0 && val < 1) val = val * 100;
                                     
-                                    // SÓ PARA A BUSCA E GRAVA SE O VALOR FOR MAIOR QUE ZERO
                                     if (val > 0) {
                                         percReajusteBase[planoDaAba] = parseFloat(val.toFixed(2));
                                         break; 
                                     }
                                 }
-                                // Se o valor for 0 ou '-', ele não dá "break" e continua procurando nas linhas abaixo!
                             }
                         }
                     }
                 });
 
-                // Extração dos Valores Principais
+                // EXTRAÇÃO DOS VALORES DA TABELA PRINCIPAL (ROBUSTA PARA NÃO PULAR A UNIFÁCIL)
                 let sheetNamePrincipal = wb.SheetNames.find(n => n.toUpperCase().includes('TABELA COM VALORES')) || wb.SheetNames[0];
                 const wsPrincipal = wb.Sheets[sheetNamePrincipal];
                 const dataPrincipal = XLSX.utils.sheet_to_json(wsPrincipal, { header: 1 });
@@ -344,17 +338,25 @@
 
                 if (headerIdx !== -1) {
                     const headers = dataPrincipal[headerIdx].map(h => String(h).toUpperCase().trim());
-                    const mapeamento = {
-                        "UNIMAX": "UNIMAX", "UNIFACIL": "UNIFÁCIL", "UNIPART": "UNIPART",
-                        "ODONTO UNIFACIL": "ODONTO UNIFÁCIL", "CCG TOP LIFE": "TOP LIFE", 
-                        "CCG MULTI": "MULTI", "VERTE": "VERTE", "UNIODONTO": "UNIODONTO", 
-                        "ODONTO EMPRESAS": "EMPRESA"
-                    };
-
+                    
                     let colunasIndices = {};
-                    for (let chave in mapeamento) {
-                        let idx = headers.findIndex(h => h.includes(mapeamento[chave]));
-                        if (idx !== -1) colunasIndices[chave] = idx;
+                    
+                    // Buscador super inteligente que não confunde acentos e diferencia Odonto Unifácil de Unifácil normal
+                    colunasIndices["UNIFACIL"] = headers.findIndex(h => (h.includes("UNIFACIL") || h.includes("UNIFÁCIL") || h.includes("UNIFACÍL")) && !h.includes("ODONTO"));
+                    colunasIndices["ODONTO UNIFACIL"] = headers.findIndex(h => h.includes("ODONTO UNIFACIL") || h.includes("ODONTO UNIFÁCIL"));
+                    colunasIndices["UNIMAX"] = headers.findIndex(h => h.includes("UNIMAX"));
+                    colunasIndices["UNIPART"] = headers.findIndex(h => h.includes("UNIPART"));
+                    colunasIndices["CCG TOP LIFE"] = headers.findIndex(h => h.includes("TOP LIFE"));
+                    colunasIndices["CCG MULTI"] = headers.findIndex(h => h.includes("MULTI"));
+                    colunasIndices["VERTE"] = headers.findIndex(h => h.includes("VERTE"));
+                    colunasIndices["UNIODONTO"] = headers.findIndex(h => h.includes("UNIODONTO"));
+                    colunasIndices["ODONTO EMPRESAS"] = headers.findIndex(h => h.includes("EMPRESA"));
+
+                    // Remove quem não for achado (evita quebrar a tabela inteira)
+                    for (let chave in colunasIndices) {
+                        if (colunasIndices[chave] === -1) {
+                            delete colunasIndices[chave];
+                        }
                     }
 
                     let novosPrecos = { ODONTOPREV: Array(10).fill(36.38) }; 
