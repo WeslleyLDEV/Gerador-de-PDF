@@ -9,16 +9,16 @@
     <style>
         :root { --primary: #6a1b9a; --primary-dark: #4a148c; --secondary: #f3e5f5; --accent: #ce93d8; --text: #333; --bg: #f8f9fa; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
-        .container { background: white; padding: 40px; max-width: 1050px; margin: auto; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        .container { background: white; padding: 40px; max-width: 1150px; margin: auto; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
         h2 { color: var(--primary); border-bottom: 3px solid var(--secondary); padding-bottom: 10px; text-align: center; margin-bottom: 30px; }
         h3 { color: var(--primary); margin-top: 30px; font-size: 1.1em; border-left: 5px solid var(--primary); padding: 8px 15px; background: var(--secondary); border-radius: 0 8px 8px 0; }
         label { display: block; margin-top: 15px; font-weight: 600; font-size: 0.85em; color: #666; text-transform: uppercase; }
         input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 14px; font-family: inherit; }
         input:focus, select:focus, textarea:focus { border-color: var(--accent); outline: none; }
         .input-destaque { background: #e3f2fd; color: #1565c0; font-weight: bold; border-color: #90caf9; }
-        .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; }
+        .grid-topo { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
         .grid-3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 20px; }
-        .grid-7 { display: grid; grid-template-columns: 1fr 1.2fr 1fr 0.8fr 0.7fr 1fr 1fr; gap: 15px; }
+        .grid-8 { display: grid; grid-template-columns: 1fr 1.3fr 1.1fr 1.1fr 0.8fr 0.6fr 1fr 1fr; gap: 10px; }
         .btn-main { width: 100%; padding: 18px; margin-top: 30px; background: var(--primary); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 18px; transition: 0.3s; }
         .btn-main:hover { background: var(--primary-dark); transform: translateY(-2px); }
         .btn-add { background: white; color: var(--primary); border: 2px solid var(--primary); padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 15px; font-weight: 600; }
@@ -46,24 +46,29 @@
 <div class="container">
     <h2>Gerador de Declaração ASHPS - IR 2026 (Ano Base 2025)</h2>
 
-    <div class="grid-4">
+    <div class="grid-topo">
         <div>
-            <label>1. Importar Usuários</label>
-            <input type="file" id="fileImport" accept=".xlsx,.xls,.csv" onchange="processarPlanilha(event)">
+            <label>1. Tabela de Valores</label>
+            <input type="file" id="fileTabela" accept=".xlsx,.xls,.csv" onchange="processarValoresExcel(event)">
+            <div id="statusTabela" class="status-bar warn">Aguardando Planilha...</div>
+        </div>
+        <div>
+            <label>2. Planilha de Usuários</label>
+            <input type="file" id="fileImport" accept=".xlsx,.xls,.csv" onchange="processarPlanilhaUsuarios(event)">
             <div id="statusMsg" class="status-bar warn">Aguardando arquivo...</div>
         </div>
         <div>
-            <label>2. Exceções VERTE</label>
+            <label>3. Exceções VERTE</label>
             <textarea id="txtPdfVerte" rows="1" placeholder="Ctrl+V PDF..." oninput="processarTextoPDF()" style="resize: vertical; min-height: 48px; padding: 12px 8px;"></textarea>
             <div id="statusPdf" class="status-bar warn">Opcional</div>
         </div>
         <div>
-            <label>3. Logo PDF (Opcional)</label>
+            <label>4. Logo PDF (Opcional)</label>
             <input type="file" id="fileLogo" accept="image/*" onchange="carregarLogo(event)">
             <div id="statusLogo" class="status-bar warn">Aguardando imagem...</div>
         </div>
         <div>
-            <label>4. Localizar Pessoa</label>
+            <label>5. Localizar Pessoa</label>
             <input list="listaBusca" id="inputBusca" oninput="selecionarAssociado()" placeholder="Digite o nome...">
             <datalist id="listaBusca"></datalist>
         </div>
@@ -78,7 +83,7 @@
         <div><label>Matrícula</label><input id="matTitular"></div>
     </div>
 
-    <div class="grid-7" style="margin-top: 20px;">
+    <div class="grid-8" style="margin-top: 20px;">
         <div>
             <label>Nascimento</label>
             <input type="date" id="nascTitular" onchange="atualizarValores()">
@@ -96,6 +101,13 @@
                 <option value="ODONTO EMPRESAS">ODONTO EMPRESAS (63,5%)</option>
                 <option value="ODONTOPREV">ODONTOPREV (5%)</option>
                 <option value="ODONTO UNIFACIL">ODONTO UNIFÁCIL (0%)</option>
+            </select>
+        </div>
+        <div>
+            <label>Modo da Tabela</label>
+            <select id="modoCalculo" onchange="atualizarValores()" style="background: #e8f5e9;">
+                <option value="reverso" selected>É o Final (Retroagir)</option>
+                <option value="direto">É a Base (Somar)</option>
             </select>
         </div>
         <div>
@@ -117,11 +129,11 @@
             </select>
         </div>
         <div>
-            <label>% Reajuste</label>
+            <label>% Reaj</label>
             <input type="number" id="inputPercReajuste" step="0.01" value="0.00" onchange="atualizarValores()">
         </div>
         <div>
-            <label>Qtd Meses</label>
+            <label>Meses</label>
             <input type="number" id="qtdMesesTitular" value="12" min="1" max="12" onchange="atualizarValores()">
         </div>
         <div>
@@ -178,6 +190,19 @@
     let excecoesVerte = {}; 
     let memoriaCalculoTitular = ""; 
 
+    // Mapeamento automático
+    let mesesReajusteBase = {
+        "UNIMAX": 11, "UNIFACIL": 3, "UNIPART": 7, "VERTE": 11,
+        "ODONTO EMPRESAS": 4, "UNIODONTO": 1, "ODONTOPREV": 1, 
+        "CCG TOP LIFE": 1, "CCG MULTI": 1, "ODONTO UNIFACIL": 0
+    };
+
+    let percReajusteBase = {
+        "UNIMAX": 0, "UNIFACIL": 0, "UNIPART": 0, "VERTE": 0,
+        "ODONTO EMPRESAS": 0, "UNIODONTO": 0, "ODONTOPREV": 0, 
+        "CCG TOP LIFE": 0, "CCG MULTI": 0, "ODONTO UNIFACIL": 0
+    };
+
     function carregarLogo(e) {
         const file = e.target.files[0];
         if(!file) return;
@@ -191,8 +216,8 @@
         reader.readAsDataURL(file);
     }
     
-    // TABELAS BASE (Valores originais para Janeiro de 2025, ANTES de novos reajustes do ano)
-    const precos = {
+    // TABELAS BASE PADRÃO
+    let precos = {
         UNIMAX: [400.11, 460.10, 528.93, 608.51, 699.76, 811.80, 982.22, 1277.06, 1723.96, 2397.69],
         UNIFACIL: [121.70, 165.82, 198.49, 226.56, 235.68, 240.05, 298.23, 342.87, 471.90, 730.27],
         UNIPART: [293.05, 351.37, 411.73, 472.39, 501.11, 577.89, 717.96, 909.91, 1199.45, 1757.99],
@@ -206,16 +231,9 @@
     };
 
     const taxas = { 
-        UNIMAX: 0.08, 
-        UNIFACIL: 0.08, 
-        UNIPART: 0.08, 
-        VERTE: 0.10, 
-        "CCG TOP LIFE": 0.20, 
-        "CCG MULTI": 0.1111, 
-        UNIODONTO: 0.31, 
-        "ODONTO EMPRESAS": 0.635, 
-        ODONTOPREV: 0.05, 
-        "ODONTO UNIFACIL": 0 
+        UNIMAX: 0.08, UNIFACIL: 0.08, UNIPART: 0.08, VERTE: 0.10, 
+        "CCG TOP LIFE": 0.20, "CCG MULTI": 0.1111, UNIODONTO: 0.31, 
+        "ODONTO EMPRESAS": 0.635, ODONTOPREV: 0.05, "ODONTO UNIFACIL": 0 
     };
 
     const cnpjs = {
@@ -231,28 +249,176 @@
         "ODONTO UNIFACIL": { nome: "ODONTO UNIFÁCIL", cnpj: "87.096.616/0001-96" }
     };
 
-    function processarPlanilha(e) {
+    function processarValoresExcel(e) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            try {
+                const wb = XLSX.read(evt.target.result, { type: 'binary' });
+                
+                const mesesNomes = { "JANEIRO":1, "FEVEREIRO":2, "MARÇO":3, "MARCO":3, "ABRIL":4, "MAIO":5, "JUNHO":6, "JULHO":7, "AGOSTO":8, "SETEMBRO":9, "OUTUBRO":10, "NOVEMBRO":11, "DEZEMBRO":12 };
+                const mesesRegex = new RegExp("\\b(" + Object.keys(mesesNomes).join("|") + ")\\b", "i");
+
+                wb.SheetNames.forEach(sheetName => {
+                    let sheetUpper = sheetName.toUpperCase().trim();
+                    let planoDaAba = null;
+
+                    if (sheetUpper.includes("UNIMAX")) planoDaAba = "UNIMAX";
+                    else if (sheetUpper.includes("ODONTO UNIF")) planoDaAba = "ODONTO UNIFACIL";
+                    else if (sheetUpper.includes("UNIFACIL") || sheetUpper.includes("UNIFÁCIL")) planoDaAba = "UNIFACIL";
+                    else if (sheetUpper.includes("UNIPART")) planoDaAba = "UNIPART";
+                    else if (sheetUpper.includes("VERTE")) planoDaAba = "VERTE";
+                    else if (sheetUpper.includes("TOP LIFE")) planoDaAba = "CCG TOP LIFE";
+                    else if (sheetUpper.includes("MULTI")) planoDaAba = "CCG MULTI";
+                    else if (sheetUpper.includes("UNIODONTO")) planoDaAba = "UNIODONTO";
+                    else if (sheetUpper.includes("EMPRESA")) planoDaAba = "ODONTO EMPRESAS";
+                    else if (sheetUpper.includes("ODONTOPREV")) planoDaAba = "ODONTOPREV";
+
+                    if (planoDaAba) {
+                        const wsTab = wb.Sheets[sheetName];
+                        const dataTab = XLSX.utils.sheet_to_json(wsTab, { header: 1 });
+                        
+                        let mesEncontrado = false;
+                        let colPercIdx = 1; 
+                        
+                        // Passo 1: Achar o mês e a coluna do reajuste
+                        for (let r = 0; r < Math.min(dataTab.length, 15); r++) {
+                            if(!dataTab[r]) continue;
+                            let linhaStr = dataTab[r].join(" ").toUpperCase();
+                            
+                            if (!mesEncontrado && (linhaStr.includes("REAJUSTE") || linhaStr.includes("TABELA"))) {
+                                let match = linhaStr.match(mesesRegex);
+                                if (match) {
+                                    mesesReajusteBase[planoDaAba] = mesesNomes[match[1].toUpperCase()];
+                                    mesEncontrado = true;
+                                }
+                            }
+                            
+                            if (dataTab[r][0] && String(dataTab[r][0]).toUpperCase().includes("FAIXA ETÁRIA")) {
+                                let idx = dataTab[r].findIndex(h => h && String(h).toUpperCase().includes("REAJUSTE"));
+                                if (idx !== -1) colPercIdx = idx;
+                            }
+                        }
+
+                        // Passo 2: ACHAR O REAJUSTE NA LINHA 0-18 (Ignorando se for zero ou traço)
+                        for (let r = 0; r < dataTab.length; r++) {
+                            if(!dataTab[r]) continue;
+                            let col0 = String(dataTab[r][0] || "").trim().toUpperCase();
+                            if (col0.startsWith("0-18") || col0.startsWith("0 A 18") || col0.startsWith("00 A 18")) {
+                                let percCru = dataTab[r][colPercIdx];
+                                
+                                if (percCru !== undefined && percCru !== null && String(percCru).trim() !== "" && String(percCru).trim() !== "-") {
+                                    let val = 0;
+                                    if (typeof percCru === "number") {
+                                        val = percCru;
+                                    } else {
+                                        let valStr = String(percCru).replace('%', '').replace(',', '.').trim();
+                                        val = parseFloat(valStr) || 0; 
+                                    }
+                                    
+                                    if (val > 0 && val < 1) val = val * 100;
+                                    
+                                    // SÓ PARA A BUSCA E GRAVA SE O VALOR FOR MAIOR QUE ZERO
+                                    if (val > 0) {
+                                        percReajusteBase[planoDaAba] = parseFloat(val.toFixed(2));
+                                        break; 
+                                    }
+                                }
+                                // Se o valor for 0 ou '-', ele não dá "break" e continua procurando nas linhas abaixo!
+                            }
+                        }
+                    }
+                });
+
+                // Extração dos Valores Principais
+                let sheetNamePrincipal = wb.SheetNames.find(n => n.toUpperCase().includes('TABELA COM VALORES')) || wb.SheetNames[0];
+                const wsPrincipal = wb.Sheets[sheetNamePrincipal];
+                const dataPrincipal = XLSX.utils.sheet_to_json(wsPrincipal, { header: 1 });
+
+                let headerIdx = -1;
+                for (let i = 0; i < dataPrincipal.length; i++) {
+                    if (dataPrincipal[i] && dataPrincipal[i][0] && String(dataPrincipal[i][0]).toUpperCase().trim() === 'IDADE') {
+                        headerIdx = i; break;
+                    }
+                }
+
+                if (headerIdx !== -1) {
+                    const headers = dataPrincipal[headerIdx].map(h => String(h).toUpperCase().trim());
+                    const mapeamento = {
+                        "UNIMAX": "UNIMAX", "UNIFACIL": "UNIFÁCIL", "UNIPART": "UNIPART",
+                        "ODONTO UNIFACIL": "ODONTO UNIFÁCIL", "CCG TOP LIFE": "TOP LIFE", 
+                        "CCG MULTI": "MULTI", "VERTE": "VERTE", "UNIODONTO": "UNIODONTO", 
+                        "ODONTO EMPRESAS": "EMPRESA"
+                    };
+
+                    let colunasIndices = {};
+                    for (let chave in mapeamento) {
+                        let idx = headers.findIndex(h => h.includes(mapeamento[chave]));
+                        if (idx !== -1) colunasIndices[chave] = idx;
+                    }
+
+                    let novosPrecos = { ODONTOPREV: Array(10).fill(36.38) }; 
+                    for (let chave in colunasIndices) novosPrecos[chave] = [];
+
+                    for (let i = 1; i <= 10; i++) {
+                        let linha = dataPrincipal[headerIdx + i];
+                        if (!linha) break;
+
+                        for (let chave in colunasIndices) {
+                            let idxC = colunasIndices[chave];
+                            let valorCru = linha[idxC];
+                            
+                            let valorTratado = 0;
+                            if (typeof valorCru === 'number') {
+                                valorTratado = valorCru;
+                            } else if (valorCru) {
+                                let str = String(valorCru).replace(/R\$\s?/g, '').trim();
+                                if (str.includes(',') && str.includes('.')) str = str.replace(/\./g, '').replace(',', '.');
+                                else if (str.includes(',')) str = str.replace(',', '.');
+                                valorTratado = parseFloat(str) || 0;
+                            }
+                            novosPrecos[chave].push(valorTratado);
+                        }
+                    }
+                    Object.assign(precos, novosPrecos);
+                }
+
+                const msg = document.getElementById('statusTabela');
+                msg.textContent = "✓ Planilha, Meses e Porcentagens importados!";
+                msg.className = "status-bar ok";
+                
+                mudarConvenio(); 
+                
+            } catch (err) {
+                console.error(err);
+                alert("Ocorreu um erro ao ler os valores da planilha.");
+            }
+        };
+        reader.readAsBinaryString(file);
+    }
+
+    function processarPlanilhaUsuarios(e) {
         const file = e.target.files[0];
         const reader = new FileReader();
         reader.onload = (evt) => {
             const wb = XLSX.read(evt.target.result, { type: 'binary' });
-            // Leitura simples das colunas A, B, C e D da sua planilha de associados
             const dados = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: "A", defval: "" });
             const datalist = document.getElementById('listaBusca');
             bancoLocal.clear(); datalist.innerHTML = "";
             
             dados.forEach((linha, index) => {
-                if (index === 0 && String(linha.B).toUpperCase().includes("NOME")) return;
-                const nome = String(linha.B).toUpperCase().trim();
+                if (index === 0 && String(linha.A).toUpperCase().includes("NOME")) return;
+                const nome = String(linha.A).toUpperCase().trim();
+                
                 if(nome && nome !== "UNDEFINED" && nome !== "") {
-                    bancoLocal.set(nome, { Matricula: linha.A, Cpf: linha.C, Nascimento: linha.D });
+                    bancoLocal.set(nome, { Matricula: linha.B, Cpf: linha.C, Nascimento: linha.D });
                     const opt = document.createElement('option');
                     opt.value = nome;
                     datalist.appendChild(opt);
                 }
             });
             const msg = document.getElementById('statusMsg');
-            msg.textContent = `✓ ${bancoLocal.size} cadastros processados!`;
+            msg.textContent = `✓ ${bancoLocal.size} usuários carregados!`;
             msg.className = "status-bar ok";
         };
         reader.readAsBinaryString(file);
@@ -290,14 +456,13 @@
 
     function mudarConvenio() {
         const conv = document.getElementById('selConvenio').value;
-        // Automatizando os 14% em novembro (para evitar esquecer no caso da Unimed)
-        if (conv.includes('UNI') && conv !== 'UNIODONTO' && conv !== 'ODONTO UNIFACIL') {
-            document.getElementById('selMesReajuste').value = "11";
-            document.getElementById('inputPercReajuste').value = "14.00";
-        } else {
-            document.getElementById('selMesReajuste').value = "0";
-            document.getElementById('inputPercReajuste').value = "0.00";
-        }
+        
+        const mesAutomato = mesesReajusteBase[conv] || 0;
+        const percAutomata = percReajusteBase[conv] || 0;
+        
+        document.getElementById('selMesReajuste').value = mesAutomato;
+        document.getElementById('inputPercReajuste').value = percAutomata.toFixed(2);
+
         atualizarValores();
     }
 
@@ -336,15 +501,17 @@
         const mesReajuste = parseInt(document.getElementById('selMesReajuste').value);
         const percReajuste = parseFloat(document.getElementById('inputPercReajuste').value) / 100;
         const qtdMesesTitular = parseInt(document.getElementById('qtdMesesTitular').value) || 12;
+        const modoCalculo = document.getElementById('modoCalculo').value;
 
         let valorBrutoTotal = 0; let valorLiquidoTotal = 0;
         memoriaCalculoTitular = "=== CÁLCULO DO TITULAR ===\n";
+        memoriaCalculoTitular += `[INFO] Os valores base estão puxando da tabela do sistema.\n`
         memoriaCalculoTitular += `Plano Selecionado: ${conv} | Taxa Administrativa: ${(taxa * 100).toFixed(2)}%\n`;
         memoriaCalculoTitular += `Meses Pagos no Ano: ${qtdMesesTitular}\n`;
 
         if(nasc) {
             const [anoNasc, mesNasc] = nasc.split('-').map(Number);
-            const anoDeclaracao = 2025; // Calculando tudo referente a 2025
+            const anoDeclaracao = 2025; 
             const cpfLimp = document.getElementById('cpfTitular').value.replace(/\D/g, "");
             
             if (conv === "VERTE" && excecoesVerte[cpfLimp]) {
@@ -355,8 +522,18 @@
                 memoriaCalculoTitular += `>> Valor do boleto (R$ ${valorMensalVerte.toFixed(2)} x ${qtdMesesTitular} meses) BRUTO fixado: R$ ${valorBrutoTotal.toFixed(2)}\n`;
             } else {
                 memoriaCalculoTitular += `Data de Nascimento: ${nasc} | Mês de Aniversário: ${mesNasc}\n`;
-                if (mesReajuste === 0) memoriaCalculoTitular += `Mês do Reajuste: Sem Reajuste (Valor mantido igual à tabela)\n\n`;
-                else memoriaCalculoTitular += `Mês do Reajuste do Plano: Mês ${mesReajuste} | % do Reajuste: ${(percReajuste * 100).toFixed(2)}% (Acrescentado a partir deste mês)\n\n`;
+                
+                if (mesReajuste === 0 || percReajuste === 0) {
+                    memoriaCalculoTitular += `Mês do Reajuste: Sem Reajuste ativo (Valor mantido igual à tabela)\n\n`;
+                } else {
+                    memoriaCalculoTitular += `Mês do Reajuste Automático do Plano: Mês ${mesReajuste} | % do Reajuste Aplicado: ${(percReajuste * 100).toFixed(2)}%\n`;
+                    if (modoCalculo === "reverso") {
+                        memoriaCalculoTitular += `[MÉTODO REVERSO]: A tabela exportada já possui o valor final. O sistema retroagiu o valor e removeu os ${(percReajuste * 100).toFixed(2)}% nos meses anteriores a ${mesReajuste}.\n\n`;
+                    } else {
+                        memoriaCalculoTitular += `[MÉTODO DIRETO]: A tabela exportada possui o valor base. O sistema adicionou os ${(percReajuste * 100).toFixed(2)}% a partir do mês ${mesReajuste}.\n\n`;
+                    }
+                }
+                
                 memoriaCalculoTitular += `Detalhamento das Mensalidades (Ano Base 2025):\n`;
                 
                 for(let mes = 1; mes <= qtdMesesTitular; mes++) {
@@ -368,13 +545,21 @@
                     else if(idadeNoMes <= 33) idx=3; else if(idadeNoMes <= 38) idx=4; else if(idadeNoMes <= 43) idx=5;
                     else if(idadeNoMes <= 48) idx=6; else if(idadeNoMes <= 53) idx=7; else if(idadeNoMes <= 58) idx=8; else idx=9;
 
-                    let brutoMes = precos[conv][idx];
+                    let valorLidoDaTabela = precos[conv][idx];
+                    let brutoMes = valorLidoDaTabela;
                     
-                    if (mesReajuste > 0 && mes >= mesReajuste) {
-                        brutoMes = brutoMes * (1 + percReajuste);
+                    if (mesReajuste > 0 && percReajuste > 0) {
+                        if (modoCalculo === "reverso") {
+                            if (mes < mesReajuste) {
+                                brutoMes = valorLidoDaTabela / (1 + percReajuste);
+                            }
+                        } else {
+                            if (mes >= mesReajuste) {
+                                brutoMes = valorLidoDaTabela * (1 + percReajuste);
+                            }
+                        }
                     }
                     
-                    // Força arredondamento em CADA mês antes de somar para garantir exatidão
                     brutoMes = Number(brutoMes.toFixed(2));
                     let liqMes = Number((brutoMes / (1 + taxa)).toFixed(2));
 
@@ -443,7 +628,6 @@
         const conv = document.getElementById('selConvenio').value;
         const taxa = taxas[conv] || 0;
 
-        // Reconstrói a Memória de Cálculo para bater com o visual
         let logFinal = memoriaCalculoTitular + `-> Titular Líquido (após desc. de ${(taxa*100).toFixed(2)}%): R$ ${totalLiquido.toFixed(2)}\n\n`;
         logFinal += "=== DEPENDENTES E ADICIONAIS ===\n";
 
@@ -539,7 +723,7 @@
                 await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; });
                 doc.addImage(img, 'PNG', 85, 10, 40, 20); 
             }
-        } catch(e) { console.log("Logo não enviada ou não encontrada localmente."); }
+        } catch(e) { console.log("Logo não enviada."); }
 
         let y = 45;
         const nome = document.getElementById('nomeTitular').value.toUpperCase() || "NÃO INFORMADO";
