@@ -16,7 +16,7 @@
         input, select, textarea { width: 100%; padding: 12px; margin-top: 5px; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 14px; font-family: inherit; }
         input:focus, select:focus, textarea:focus { border-color: var(--accent); outline: none; }
         .input-destaque { background: #e3f2fd; color: #1565c0; font-weight: bold; border-color: #90caf9; }
-        .grid-topo { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .grid-topo { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
         .grid-3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 20px; }
         .grid-8 { display: grid; grid-template-columns: 1fr 1.3fr 1.1fr 1.1fr 0.8fr 0.6fr 1fr 1fr; gap: 10px; }
         .btn-main { width: 100%; padding: 18px; margin-top: 30px; background: var(--primary); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 18px; transition: 0.3s; }
@@ -39,36 +39,32 @@
         .card-liq input { color: var(--primary); font-weight: 800; font-size: 1.8em; }
         hr { border: 0; border-top: 2px solid #f0f0f0; margin: 40px 0; }
         #boxMemoria { display: none; background: #1e1e1e; color: #4af626; padding: 20px; border-radius: 8px; font-family: 'Courier New', Courier, monospace; font-size: 14px; white-space: pre-wrap; margin-top: 15px; line-height: 1.5; border: 2px solid #333; }
+        .badge-sistema { display: inline-block; background: #2e7d32; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8em; vertical-align: middle; margin-left: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Gerador de Declaração ASHPS - IR 2026 (Ano Base 2025)</h2>
+    <h2>Gerador de Declaração ASHPS - IR 2026 (Ano Base 2025) <span class="badge-sistema">Tabela Integrada v2.1</span></h2>
 
     <div class="grid-topo">
         <div>
-            <label>1. Tabela de Valores</label>
-            <input type="file" id="fileTabela" accept=".xlsx,.xls,.csv" onchange="processarValoresExcel(event)">
-            <div id="statusTabela" class="status-bar warn">Aguardando Planilha...</div>
-        </div>
-        <div>
-            <label>2. Planilha de Usuários (.txt)</label>
+            <label>1. Planilha de Usuários (.txt ou .xlsx)</label>
             <input type="file" id="fileImport" accept=".xlsx,.xls,.csv,.txt" onchange="processarPlanilhaUsuarios(event)">
             <div id="statusMsg" class="status-bar warn">Aguardando arquivo...</div>
         </div>
         <div>
-            <label>3. Exceções VERTE</label>
-            <textarea id="txtPdfVerte" rows="1" placeholder="Ctrl+V PDF..." oninput="processarTextoPDF()" style="resize: vertical; min-height: 48px; padding: 12px 8px;"></textarea>
+            <label>2. Exceções VERTE</label>
+            <textarea id="txtPdfVerte" rows="1" placeholder="Ctrl+V do PDF..." oninput="processarTextoPDF()" style="resize: vertical; min-height: 48px; padding: 12px 8px;"></textarea>
             <div id="statusPdf" class="status-bar warn">Opcional</div>
         </div>
         <div>
-            <label>4. Logo PDF (Opcional)</label>
+            <label>3. Logo PDF (Opcional)</label>
             <input type="file" id="fileLogo" accept="image/*" onchange="carregarLogo(event)">
             <div id="statusLogo" class="status-bar warn">Aguardando imagem...</div>
         </div>
         <div>
-            <label>5. Localizar Pessoa</label>
+            <label>4. Localizar Pessoa</label>
             <input list="listaBusca" id="inputBusca" oninput="selecionarAssociado()" placeholder="Digite o nome...">
             <datalist id="listaBusca"></datalist>
         </div>
@@ -190,27 +186,38 @@
     let excecoesVerte = {}; 
     let memoriaCalculoTitular = ""; 
 
-    const todosOsPlanosDoSistema = ["UNIMAX", "UNIFACIL", "UNIPART", "VERTE", "CCG TOP LIFE", "CCG MULTI", "UNIODONTO", "ODONTO EMPRESAS", "ODONTOPREV", "ODONTO UNIFACIL"];
+    // TABELA DE VALORES ATUALIZADOS (Validados e Fixos)
+    // Faixas: 0-18 | 19-23 | 24-28 | 29-33 | 34-38 | 39-43 | 44-48 | 49-53 | 54-58 | 59+
+    const precos = {
+        "UNIMAX": [456.12, 524.50, 602.98, 693.69, 797.76, 925.40, 1119.69, 1455.59, 1965.32, 2733.36],
+        "UNIFACIL": [121.70, 165.82, 198.49, 226.69, 235.82, 240.19, 298.40, 350.22, 471.90, 730.27],
+        "UNIPART": [293.05, 351.37, 411.73, 472.39, 501.11, 577.89, 717.96, 844.48, 1199.45, 1757.99],
+        "VERTE": [99.99, 114.96, 132.22, 152.03, 174.84, 201.05, 251.32, 314.14, 430.54, 599.78],
+        "CCG TOP LIFE": [267.34, 310.92, 349.74, 379.16, 418.97, 457.41, 512.14, 651.68, 882.50, 1294.58],
+        "CCG MULTI": [238.97, 300.93, 326.73, 359.00, 407.24, 462.49, 573.13, 714.02, 1106.15, 1256.49],
+        "UNIODONTO": [38.88, 38.88, 38.88, 38.88, 38.88, 38.88, 38.88, 38.88, 38.88, 38.88],
+        "ODONTO EMPRESAS": [27.49, 27.49, 27.49, 27.49, 27.49, 27.49, 27.49, 27.49, 27.49, 27.49],
+        "ODONTOPREV": [34.92, 34.92, 34.92, 34.92, 34.92, 34.92, 34.92, 34.92, 34.92, 34.92],
+        "ODONTO UNIFACIL": [19.55, 19.55, 19.55, 19.55, 19.55, 19.55, 19.55, 19.55, 19.55, 19.55]
+    };
 
-    let precos = {}; // Inicia zerado, preenchido apenas pela planilha
-
-    // Estas taxas são vitais e não devem ser removidas (Desconto Administrativo para chegar ao valor Líquido do IR)
+    // Taxas Administrativas Finais (Isolam o valor para a Receita)
     const taxas = { 
-        UNIMAX: 0.08, UNIFACIL: 0.08, UNIPART: 0.08, VERTE: 0.10, 
-        "CCG TOP LIFE": 0.20, "CCG MULTI": 0.1111, UNIODONTO: 0.31, 
-        "ODONTO EMPRESAS": 0.635, ODONTOPREV: 0.05, "ODONTO UNIFACIL": 0 
+        "UNIMAX": 0.08, "UNIFACIL": 0.08, "UNIPART": 0.08, "VERTE": 0.10, 
+        "CCG TOP LIFE": 0.20, "CCG MULTI": 0.1111, "UNIODONTO": 0.31, 
+        "ODONTO EMPRESAS": 0.635, "ODONTOPREV": 0.05, "ODONTO UNIFACIL": 0 
     };
 
     const cnpjs = {
-        UNIMAX: { nome: "UNIMED PORTO ALEGRE", cnpj: "87.096.616/0001-96" },
-        UNIFACIL: { nome: "UNIMED PORTO ALEGRE", cnpj: "87.096.616/0001-96" },
-        UNIPART: { nome: "UNIMED PORTO ALEGRE", cnpj: "87.096.616/0001-96" },
-        VERTE: { nome: "VERTE SAÚDE", cnpj: "92.741.016/0001-73" },
+        "UNIMAX": { nome: "UNIMED PORTO ALEGRE", cnpj: "87.096.616/0001-96" },
+        "UNIFACIL": { nome: "UNIMED PORTO ALEGRE", cnpj: "87.096.616/0001-96" },
+        "UNIPART": { nome: "UNIMED PORTO ALEGRE", cnpj: "87.096.616/0001-96" },
+        "VERTE": { nome: "VERTE SAÚDE", cnpj: "92.741.016/0001-73" },
         "CCG TOP LIFE": { nome: "CLINIPAM", cnpj: "76.882.612/0001-17" },
         "CCG MULTI": { nome: "CLINIPAM", cnpj: "76.882.612/0001-17" },
-        UNIODONTO: { nome: "UNIODONTO", cnpj: "88.938.089/0001-82" },
+        "UNIODONTO": { nome: "UNIODONTO", cnpj: "88.938.089/0001-82" },
         "ODONTO EMPRESAS": { nome: "ODONTO EMPRESAS", cnpj: "40.223.893/0001-59" },
-        ODONTOPREV: { nome: "ODONTOPREV", cnpj: "58.119.199/0001-51" },
+        "ODONTOPREV": { nome: "ODONTOPREV", cnpj: "58.119.199/0001-51" },
         "ODONTO UNIFACIL": { nome: "ODONTO UNIFÁCIL", cnpj: "87.096.616/0001-96" }
     };
 
@@ -225,131 +232,6 @@
             msg.className = "status-bar ok";
         };
         reader.readAsDataURL(file);
-    }
-
-    function limparTextoNumero(valCru) {
-        if (typeof valCru === 'number') return valCru;
-        if (!valCru) return 0;
-        let str = String(valCru).replace(/R\$\s?/g, '').trim();
-        if (str.includes(',') && str.includes('.')) str = str.replace(/\./g, '').replace(',', '.');
-        else if (str.includes(',')) str = str.replace(',', '.');
-        return parseFloat(str) || 0;
-    }
-
-    function processarValoresExcel(e) {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = (evt) => {
-            try {
-                const wb = XLSX.read(evt.target.result, { type: 'binary' });
-
-                // Reinicia os arrays para não misturar sujeira
-                precos = {
-                    UNIMAX: Array(10).fill(0), UNIFACIL: Array(10).fill(0), UNIPART: Array(10).fill(0), VERTE: Array(10).fill(0),
-                    "CCG TOP LIFE": Array(10).fill(0), "CCG MULTI": Array(10).fill(0), UNIODONTO: Array(10).fill(0),
-                    "ODONTO EMPRESAS": Array(10).fill(0), ODONTOPREV: Array(10).fill(0), "ODONTO UNIFACIL": Array(10).fill(0)
-                };
-
-                // LÊ EXCLUSIVAMENTE A "TABELA COM VALORES"
-                let sheetNamePrincipal = wb.SheetNames.find(n => n.toUpperCase().includes('TABELA COM VALORES')) || wb.SheetNames[0];
-                const wsPrincipal = wb.Sheets[sheetNamePrincipal];
-                const dataPrincipal = XLSX.utils.sheet_to_json(wsPrincipal, { header: 1 });
-                let novosPrecos = {};
-
-                let headerIdx = -1;
-                for (let i = 0; i < dataPrincipal.length; i++) {
-                    if (dataPrincipal[i] && dataPrincipal[i][0] && String(dataPrincipal[i][0]).toUpperCase().trim() === 'IDADE') {
-                        headerIdx = i; break;
-                    }
-                }
-
-                if (headerIdx !== -1) {
-                    const headers = dataPrincipal[headerIdx].map(h => String(h).toUpperCase().trim());
-                    let colunasIndices = {};
-                    
-                    colunasIndices["UNIFACIL"] = headers.findIndex(h => (h.includes("UNIFACIL") || h.includes("UNIFÁCIL") || h.includes("UNIFACÍL")) && !h.includes("ODONTO"));
-                    colunasIndices["ODONTO UNIFACIL"] = headers.findIndex(h => h.includes("ODONTO UNIFACIL") || h.includes("ODONTO UNIFÁCIL"));
-                    colunasIndices["UNIMAX"] = headers.findIndex(h => h.includes("UNIMAX"));
-                    colunasIndices["UNIPART"] = headers.findIndex(h => h.includes("UNIPART"));
-                    colunasIndices["CCG TOP LIFE"] = headers.findIndex(h => h.includes("TOP LIFE"));
-                    colunasIndices["CCG MULTI"] = headers.findIndex(h => h.includes("MULTI"));
-                    colunasIndices["VERTE"] = headers.findIndex(h => h.includes("VERTE"));
-                    colunasIndices["UNIODONTO"] = headers.findIndex(h => h.includes("UNIODONTO"));
-                    colunasIndices["ODONTO EMPRESAS"] = headers.findIndex(h => h.includes("EMPRESA"));
-                    colunasIndices["ODONTOPREV"] = headers.findIndex(h => h.includes("ODONTOPREV"));
-
-                    for (let chave in colunasIndices) {
-                        if (colunasIndices[chave] !== -1) novosPrecos[chave] = [];
-                    }
-
-                    for (let i = 1; i <= 10; i++) {
-                        let linha = dataPrincipal[headerIdx + i];
-                        if (!linha) break;
-                        for (let chave in colunasIndices) {
-                            if (colunasIndices[chave] !== -1) {
-                                novosPrecos[chave].push(limparTextoNumero(linha[colunasIndices[chave]]));
-                            }
-                        }
-                    }
-                }
-
-                // RESGATE APENAS SE A COLUNA NÃO EXISTIR NA TABELA PRINCIPAL (ex: Odontoprev)
-                todosOsPlanosDoSistema.forEach(plano => {
-                    if (!novosPrecos[plano] || novosPrecos[plano].length < 10) {
-                        let abaEspecífica = wb.SheetNames.find(n => {
-                            let up = n.toUpperCase();
-                            if (plano === "CCG TOP LIFE") return up.includes("TOP LIFE");
-                            if (plano === "CCG MULTI") return up.includes("MULTI");
-                            if (plano === "ODONTO EMPRESAS") return up.includes("EMPRESA");
-                            if (plano === "ODONTO UNIFACIL") return up.includes("ODONTO UNIF");
-                            if (plano === "UNIFACIL") return (up.includes("UNIFACIL") || up.includes("UNIFÁCIL")) && !up.includes("ODONTO");
-                            return up.includes(plano);
-                        });
-
-                        if (abaEspecífica) {
-                            let wsBackup = wb.Sheets[abaEspecífica];
-                            let dataBackup = XLSX.utils.sheet_to_json(wsBackup, { header: 1 });
-                            let idxColFinal = -1;
-                            
-                            for(let r=0; r<15; r++) {
-                                if(!dataBackup[r]) continue;
-                                let found = dataBackup[r].findIndex(h => h && String(h).toUpperCase().includes("VALOR FINAL"));
-                                if(found !== -1) { idxColFinal = found; break; }
-                            }
-
-                            if(idxColFinal !== -1) {
-                                let precosResgatados = [];
-                                let countResgate = 0;
-                                for(let r=0; r<dataBackup.length; r++) {
-                                    if(!dataBackup[r]) continue;
-                                    let col0 = String(dataBackup[r][0]).toUpperCase().trim();
-                                    
-                                    if(col0.startsWith("0-18") || col0.startsWith("00 A 18") || col0.startsWith("0 A 18") || countResgate > 0) {
-                                        precosResgatados.push(limparTextoNumero(dataBackup[r][idxColFinal]));
-                                        countResgate++;
-                                        if(countResgate === 10) break;
-                                    }
-                                }
-                                if(precosResgatados.length === 10) novosPrecos[plano] = precosResgatados;
-                            }
-                        }
-                    }
-                });
-
-                Object.assign(precos, novosPrecos);
-
-                const msg = document.getElementById('statusTabela');
-                msg.textContent = "✓ Tabela de Valores importada com fidelidade total!";
-                msg.className = "status-bar ok";
-                
-                mudarConvenio(); 
-                
-            } catch (err) {
-                console.error(err);
-                alert("Ocorreu um erro crítico ao ler a planilha. Verifique se o formato não está corrompido.");
-            }
-        };
-        reader.readAsBinaryString(file);
     }
 
     function processarPlanilhaUsuarios(e) {
@@ -495,7 +377,6 @@
     }
 
     function mudarConvenio() {
-        // Agora o reajuste nunca é automático, a não ser que o usuário decida preencher.
         document.getElementById('selMesReajuste').value = "0";
         document.getElementById('inputPercReajuste').value = "0.00";
         atualizarValores();
@@ -540,7 +421,7 @@
 
         let valorBrutoTotal = 0; let valorLiquidoTotal = 0;
         memoriaCalculoTitular = "=== CÁLCULO DO TITULAR ===\n";
-        memoriaCalculoTitular += `[ATENÇÃO] O VALOR LIDO DA TABELA ESTÁ SENDO USADO COMO BASE EXATA.\n`;
+        memoriaCalculoTitular += `[ATENÇÃO] O CÓDIGO ESTÁ USANDO OS VALORES GRAVADOS NA TABELA BASE INTEGRADA.\n`;
         memoriaCalculoTitular += `Plano Selecionado: ${conv} | Taxa Administrativa (Para IR): ${(taxa * 100).toFixed(2)}%\n`;
         memoriaCalculoTitular += `Meses Pagos no Ano: ${qtdMesesTitular}\n`;
 
@@ -559,11 +440,11 @@
                 memoriaCalculoTitular += `Data de Nascimento: ${nasc} | Mês de Aniversário: ${mesNasc}\n`;
                 
                 if (mesReajuste === 0 || percReajuste === 0) {
-                    memoriaCalculoTitular += `Sem Reajuste ativo. O sistema puxou o valor direto da Tabela Principal e multiplicou.\n\n`;
+                    memoriaCalculoTitular += `Sem Reajuste ativo. O sistema puxou o valor direto da Tabela Integrada e multiplicou.\n\n`;
                 } else {
                     memoriaCalculoTitular += `Mês de Reajuste (Manual): Mês ${mesReajuste} | % de Reajuste Aplicado: ${(percReajuste * 100).toFixed(2)}%\n`;
                     if (modoCalculo === "reverso") {
-                        memoriaCalculoTitular += `[MÉTODO REVERSO]: O sistema retroagiu o valor base, reduzindo a porcentagem nos meses anteriores.\n\n`;
+                        memoriaCalculoTitular += `[MÉTODO REVERSO]: O sistema retroagiu o valor base, reduzindo a porcentagem nos meses anteriores ao mês do reajuste.\n\n`;
                     } else {
                         memoriaCalculoTitular += `[MÉTODO DIRETO]: O sistema somou a porcentagem nos meses a partir do reajuste.\n\n`;
                     }
@@ -580,7 +461,7 @@
                     else if(idadeNoMes <= 33) idx=3; else if(idadeNoMes <= 38) idx=4; else if(idadeNoMes <= 43) idx=5;
                     else if(idadeNoMes <= 48) idx=6; else if(idadeNoMes <= 53) idx=7; else if(idadeNoMes <= 58) idx=8; else idx=9;
 
-                    let valorLidoDaTabela = (precos[conv] && precos[conv][idx]) ? precos[conv][idx] : 0;
+                    let valorLidoDaTabela = precos[conv][idx];
                     let brutoMes = valorLidoDaTabela;
                     
                     if (mesReajuste > 0 && percReajuste > 0) {
